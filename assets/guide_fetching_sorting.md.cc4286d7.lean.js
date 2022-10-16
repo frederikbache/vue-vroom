@@ -1,0 +1,1 @@
+import{_ as s,o as n,c as a,a as l}from"./app.4370c4cc.js";const A=JSON.parse('{"title":"Sorting lists","description":"","frontmatter":{},"headers":[],"relativePath":"guide/fetching/sorting.md"}'),o={name:"guide/fetching/sorting.md"},p=l("",5),e=[p];function t(c,r,D,F,y,i){return n(),a("div",null,e)}const d=s(o,[["render",t]]);export{A as __pageData,d as default};

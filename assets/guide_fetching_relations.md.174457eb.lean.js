@@ -1,0 +1,1 @@
+import{_ as s,o as n,c as a,a as l}from"./app.4370c4cc.js";const i=JSON.parse('{"title":"Including relations","description":"","frontmatter":{},"headers":[],"relativePath":"guide/fetching/relations.md"}'),o={name:"guide/fetching/relations.md"},p=l("",2),t=[p];function e(D,F,c,r,y,C){return n(),a("div",null,t)}const u=s(o,[["render",e]]);export{i as __pageData,u as default};

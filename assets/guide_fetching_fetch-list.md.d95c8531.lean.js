@@ -1,0 +1,1 @@
+import{_ as s,o as a,c as n,a as l}from"./app.4370c4cc.js";const d=JSON.parse('{"title":"FetchList","description":"","frontmatter":{},"headers":[],"relativePath":"guide/fetching/fetch-list.md"}'),p={name:"guide/fetching/fetch-list.md"},o=l("",2),t=[o];function e(c,F,D,r,y,i){return a(),n("div",null,t)}const _=s(p,[["render",e]]);export{d as __pageData,_ as default};
