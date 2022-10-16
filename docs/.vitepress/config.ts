@@ -1,5 +1,6 @@
 export default {
   title: 'Vue goes Vroom',
+  base: '/vue-vroom/',
 
   themeConfig: {
     nav: [

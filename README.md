@@ -3,7 +3,7 @@ Vroom is a store an api mock generator for Vue.js and pinia, that let's you buil
 
 
 ## Getting started
-Please refer to the [documentation](#) for guides on getting started
+Please refer to the [documentation](https://frederikbache.github.io/vue-vroom/) for guides on getting started
 
 ## Install
 ```sh
