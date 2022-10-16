@@ -4,6 +4,10 @@
   "license": "MIT",
   "description": "Vroom generates type safe stores and mock API with minimal config",
   "homepage": "https://frederikbache.github.io/vue-vroom/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/frederikbache/vue-vroom.git"
+  },
   "author": {
     "name": "Frederik Bache",
     "email": "frederik@bache.io"
