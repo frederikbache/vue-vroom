@@ -6,9 +6,9 @@ export default function setupDevtools(app: any, db: any, server: any) {
 
     setupDevtoolsPlugin({
         id: 'vue-vroom',
-        label: '🛵 Vroom',
+        label: 'Vroom',
         packageName: 'vue-vroom',
-        homepage: '#',
+        homepage: 'https://frederikbache.github.io/vue-vroom/',
         app
     }, api => {
         const INSPECTOR_ID = 'vue-vroom';
