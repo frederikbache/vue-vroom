@@ -1,6 +1,6 @@
 {
   "name": "vue-vroom",
-  "version": "0.0.21",
+  "version": "0.1.0-alpha.0",
   "license": "MIT",
   "description": "Vroom generates type safe stores and mock API with minimal config",
   "author": {
