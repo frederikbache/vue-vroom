@@ -1,5 +1,5 @@
 # Vroom
-Vroom is a store an api mock generator for Vue.js and pinia, that let's you build applications fast and even before backend is ready.
+Vroom is a store and api mock generator for Vue.js and pinia, that lets you build applications fast and even before backend is ready.
 
 
 ## Getting started

@@ -14,7 +14,7 @@ hero:
       link: /guide/intro/
     - theme: alt
       text: View on GitHub
-      link: https://github.com/frederikbache/vroom-pkg
+      link: https://github.com/frederikbache/vue-vroom
 
 features:
 - icon: 🍍
