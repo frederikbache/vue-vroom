@@ -78,7 +78,7 @@ export default function indexHandler(request: Request, db: any) {
     const paginationSettings = request.settings.pagination;
     if (paginationSettings) {
         if (paginationSettings.type === 'page') {
-            const { paginatedItems, paginationMeta } = paginateItems(items, page, limit || paginationSettings.defaultLimit)
+            const { paginatedItems, paginationMeta } = paginateItems(items, page || 1, limit || paginationSettings.defaultLimit)
             items = paginatedItems
             meta = { ...meta, ...paginationMeta }
         }
