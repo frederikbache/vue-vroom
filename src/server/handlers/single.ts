@@ -37,8 +37,6 @@ export default function singleHandler(request: Request, db: any) {
         })
     }
 
-    console.log('SINGLE HANDLER', item)
-
     return {
         data: item,
         included,

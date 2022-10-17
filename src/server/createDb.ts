@@ -9,10 +9,15 @@ type RelationUpdate = {
     name: string, model: string, id: ID, newId: ID, oldId?: ID
 }
 
+type Schema = {
+    [k: string]: { type: () => any, optional?: boolean }
+}
+
 let db = {} as any;
 
 export class Collection<Type extends HasId> {
     model: string;
+    schema: Schema;
     items: Type[];
     belongsTo: Relation;
     hasMany: Relation;
@@ -22,8 +27,9 @@ export class Collection<Type extends HasId> {
     idFactory: (i: number) => string;
     addDevtoolsEvent: ((title: string, subtitle: string, data: any) => void) | undefined;
 
-    constructor(model: string, belongsTo: Relation, hasMany: Relation, inverse: any, idsAreNumbers: boolean, idFactory: any) {
+    constructor(model: string, schema: Schema, belongsTo: Relation, hasMany: Relation, inverse: any, idsAreNumbers: boolean, idFactory: any) {
         this.model = model;
+        this.schema = schema;
         this.items = [];
         this.lastId = 0;
         this.belongsTo = belongsTo;
@@ -98,9 +104,15 @@ export class Collection<Type extends HasId> {
     create(json: Partial<Type>) {
         const newId = json.id || this.createId();
 
+        const factoryData = {} as any;
+        Object.entries(this.schema).forEach(([k, v]) => {
+            if (v.optional) return;
+            factoryData[k] = v.type();
+        })
+
         const relationsToUpdate = [] as RelationUpdate[];
 
-        let data = json as any;
+        let data = {...factoryData, ...json} as any;
 
         Object.entries(this.belongsTo).forEach(([name, modelFn]) => {
             const nameWithId = name + 'Id';
@@ -360,6 +372,7 @@ export default function createDb<ModelTypes>(options: any) {
     Object.entries(models as any).forEach(([key, value]) => {
         db[key] = new Collection(
             key,
+            (value as any).schema,
             (value as any).belongsTo,
             (value as any).hasMany,
             (value as any).inverse,
