@@ -17,7 +17,7 @@ type RawRequest = {
 }
 
 type RouteHandler = (request: Request, db: any) => void;
-type CustomRouteHandler<Db> = (request: SimpleRequest, db: Db) => void;
+type CustomRouteHandler<Db> = (request: SimpleRequest, db: Exclude<Db, null>) => void;
 
 type Route = {
     method: RouteMethod,
@@ -259,7 +259,7 @@ export default class Server<DbType> {
                 params,
                 model: route.model,
                 settings: route.settings,
-                headers,
+                headers: headers || {},
                 // @ts-expect-error
                 filters: this.filters ? this.filters[route.model] : {}
             }
