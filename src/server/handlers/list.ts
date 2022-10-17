@@ -9,8 +9,9 @@ type ListQuery = {
     include: string
 }
 
-function matchType(a: string | number, b: string) {
-    return typeof a === 'string' ? parseInt(b, 10) : b;
+function matchType(a: string | number | boolean, b: string) {
+    if (typeof a === 'boolean') return b === 'true';
+    return typeof a === 'number' ? parseFloat(b) : b;
 }
 
 const FILTER_FUNCTIONS = {
@@ -28,7 +29,7 @@ const FILTER_FUNCTIONS = {
 function parseFilterField(field: string) {
     const match = field.match(/(.*)\[(.*)\]/)
     if (!match) {
-        return { name: field, fn: (a: any, b: any) => a == b }
+        return { name: field, fn: (a: any, b: any) => a === matchType(a, b) }
     }
     const [, name, op] = match;
 

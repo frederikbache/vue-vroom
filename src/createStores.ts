@@ -26,7 +26,7 @@ const stores = {} as any;
 function parseFilters(filterSettings: any) {
     const filters = {} as any;
     Object.entries(filterSettings).forEach(([field, obj]) => {
-        if (typeof obj === 'string' || typeof obj === 'number') {
+        if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') {
             filters[field] = obj;
         } else if (obj && typeof obj === 'object') {
             let operator = '';
