@@ -13,9 +13,11 @@ type RawRequest = {
     method: RouteMethod,
     url: string,
     body?: string,
+    headers?: object
 }
 
 type RouteHandler = (request: Request, db: any) => void;
+type CustomRouteHandler<Db> = (request: SimpleRequest, db: Db) => void;
 
 type Route = {
     method: RouteMethod,
@@ -25,7 +27,6 @@ type Route = {
     settings: ModelSettings
 }
 
-// TODO merge this type with the one in index.ts
 type ModelDefinition = {
     [key: string]: ModelSettings
 }
@@ -37,31 +38,41 @@ type Filter<Db> = {
     }
 }
 
+type SimpleRequest = {
+    json: object,
+    query: object,
+    headers: object,
+    params: { [key: string]: string },
+}
+
 export type Request = {
     json: object,
     query: object,
     params: { [key: string]: string },
     model: string,
     settings: ModelSettings,
+    headers: object,
     filters: {
         [field: string]: (item: any, value: string, db: any) => boolean
     },
 }
 
 export default class Server<DbType> {
-    routes: Route[]
-    customRoutes: Route[]
-    db: DbType
-    baseURL: string
-    settings: ServerSettings
-    idsAreNumbers: boolean
-    filters: Filter<DbType>
-    addDevtoolsEvent: ((event: any) => void) | undefined;
-    events: any[];
+    protected routes: Route[]
+    protected customRoutes: Route[]
+    protected overrides: Route[]
+    protected db: DbType
+    protected baseURL: string
+    protected settings: ServerSettings
+    protected idsAreNumbers: boolean
+    protected filters: Filter<DbType>
+    protected addDevtoolsEvent: ((event: any) => void) | undefined;
+    protected events: any[];
 
     constructor(settings: Settings, models: ModelDefinition, db: DbType) {
         this.routes = [];
         this.customRoutes = [];
+        this.overrides = [];
         this.db = db;
         this.baseURL = settings.baseURL || '';
         // @ts-expect-error
@@ -69,7 +80,7 @@ export default class Server<DbType> {
             // @ts-expect-error
             this.settings = window.cypressVroom.server.settings;
             // @ts-expect-error
-            this.customRoutes = window.cypressVroom.server.customRoutes;
+            this.overrides = window.cypressVroom.server.overrides;
         } else {
             this.settings = settings.server || {};
         }
@@ -80,14 +91,16 @@ export default class Server<DbType> {
         this.events = [];
     }
 
+    /** Reset the server: truncates all db collections and removes overriden routes */
     public reset() {
         type Truncatable = { truncate: () => void }
         Object.values(this.db as unknown as { [key: string]: Truncatable }).forEach(collection => {
             collection.truncate();
         })
-        this.customRoutes = [];
+        this.overrides = [];
     }
 
+    /** Overwrite the response delay */
     public setDelay(delay: number) {
         this.settings.delay = delay;
     }
@@ -128,14 +141,52 @@ export default class Server<DbType> {
         })
     }
 
-    public get(path: string, handler: any) {
-        this.customRoutes.push({
-            method: 'GET',
-            path,
-            handler,
-            model: '',
-            settings: {}
-        })
+    protected addCustomRoute(method: RouteMethod, path: string, handler: CustomRouteHandler<DbType>) {
+        this.customRoutes.push({ method, path, handler, model: '', settings: {}})
+    }
+
+    protected override(method: RouteMethod, path: string, handler: CustomRouteHandler<DbType>) {
+        this.overrides.push({ method, path, handler, model: '', settings: {}})
+    }
+
+    /** Add a custom GET route */
+    public get(path: string, handler: CustomRouteHandler<DbType>) {
+        this.addCustomRoute('GET', path, handler);
+    }
+
+    /** Add a custom PATCH route */
+    public patch(path: string, handler: CustomRouteHandler<DbType>) {
+        this.addCustomRoute('PATCH', path, handler);
+    }
+
+    /** Add a custom POST route */
+    public post(path: string, handler: CustomRouteHandler<DbType>) {
+        this.addCustomRoute('POST', path, handler);
+    }
+
+    /** Add a custom DELETE route */
+    public delete(path: string, handler: CustomRouteHandler<DbType>) {
+        this.addCustomRoute('DELETE', path, handler);
+    }
+
+    /** Add a temporary GET route (will be removed if server.reset is called) */
+    public overrideGet(path: string, handler: CustomRouteHandler<DbType>) {
+        this.override('GET', path, handler);
+    }
+
+    /** Add a temporary PATCH route (will be removed if server.reset is called) */
+    public overridePatch(path: string, handler: CustomRouteHandler<DbType>) {
+        this.override('PATCH', path, handler);
+    }
+
+    /** Add a temporary POST route (will be removed if server.reset is called) */
+    public overridePost(path: string, handler: CustomRouteHandler<DbType>) {
+        this.override('POST', path, handler);
+    }
+
+    /** Add a temporary DELETE route (will be removed if server.reset is called) */
+    public overrideDelete(path: string, handler: CustomRouteHandler<DbType>) {
+        this.override('DELETE', path, handler);
     }
 
     protected parseQuery(search: string) {
@@ -166,10 +217,9 @@ export default class Server<DbType> {
         return JSON.parse(str);
     }
 
-
     protected findMatchingRoute(method: RouteMethod, path: string) {
         const params = {} as { [key: string]: string };
-        const matchedRoute = [...this.customRoutes, ...this.routes].find(route => {
+        const matchedRoute = [...this.overrides, ...this.customRoutes, ...this.routes].find(route => {
             if (route.method !== method) return false;
             const paramNames = [...route.path.matchAll(/:([^/]+)/g)].map(match => match[1]);
             const expression = route.path.replace(/:[^/]+/g, '([^/]+)') + '$'
@@ -196,7 +246,7 @@ export default class Server<DbType> {
     }
 
     protected parseRequest({
-        method, url, body
+        method, url, body, headers
     }: RawRequest, baseURL: string) {
         const { path, query } = this.parseUrl(url, baseURL);
         const jsonBody = body ? this.getJsonBody(body) : undefined;
@@ -209,6 +259,7 @@ export default class Server<DbType> {
                 params,
                 model: route.model,
                 settings: route.settings,
+                headers,
                 // @ts-expect-error
                 filters: this.filters ? this.filters[route.model] : {}
             }
@@ -216,7 +267,8 @@ export default class Server<DbType> {
                 this.logEvent('🛫 ' + method, url.replace(this.baseURL, ''), {
                     params: request.params,
                     query: request.query,
-                    body: request.json
+                    body: request.json,
+                    headers
                 })
                 const response = route.handler(request, this.db);
                 console.groupCollapsed('%c' + method, 'background: green', url)
@@ -261,6 +313,15 @@ export default class Server<DbType> {
 
     }
 
+    protected parseHeaders(headers: Headers | undefined) {
+        if (!headers) return {};
+        let h = {} as any;
+        for(let [k, v] of headers.entries()) {
+            h[k] = v;
+        }
+        return h;
+    }
+
     protected setupInterceptor(baseURL: string) {
         const originalFetch = window.fetch;
 
@@ -271,7 +332,9 @@ export default class Server<DbType> {
             const customResponse = this.parseRequest({
                 method: config ? config.method as RouteMethod : 'GET',
                 url: path.toString(),
-                body: config ? config.body?.toString() : ''
+                body: config ? config.body?.toString() : '',
+                // @ts-expect-error
+                headers: this.parseHeaders(config?.headers)
             }, baseURL)
 
             if (customResponse !== null) {
@@ -286,6 +349,7 @@ export default class Server<DbType> {
         }
     }
 
+    /** Add one or more custom filters */
     public addFilters(obj: Filter<DbType>) {
         Object.entries(obj).forEach(([model, filter]) => {
             const key = model as keyof DbType
@@ -310,7 +374,7 @@ export default class Server<DbType> {
         }
     }
 
-    public setDevTools(fn: (event: any) => void) {
+    protected setDevTools(fn: (event: any) => void) {
         this.addDevtoolsEvent = fn;
         while (this.events.length > 0) {
             fn(this.events.shift());
