@@ -1,1 +1,0 @@
-import{_ as s,o as a,c as n,a as l}from"./app.4370c4cc.js";const C=JSON.parse('{"title":"Adding custom filters","description":"","frontmatter":{},"headers":[],"relativePath":"guide/server/filters.md"}'),o={name:"guide/server/filters.md"},p=l("",3),e=[p];function t(r,c,F,y,D,A){return a(),n("div",null,e)}const d=s(o,[["render",t]]);export{C as __pageData,d as default};
