@@ -1,7 +1,7 @@
 # Paginating lists
 
 FetchList let's you easily interact with models with pagination. Remember to
-[add pagination to your model](guide/models/pagination) first.
+[add pagination to your model](/guide/models/pagination) first.
 
 ## Page pagination
 
