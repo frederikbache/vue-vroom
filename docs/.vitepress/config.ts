@@ -19,16 +19,18 @@ export default {
             { text: 'What is Vroom?', link: '/guide/intro/' },
             { text: 'Getting started', link: '/guide/intro/getting-started' },
             { text: 'Configuration', link: '/guide/intro/config' },
+            { text: 'Organisation / optimisation', link: '/guide/intro/organization' },
           ]
         },
         {
           text: 'Models and relations',
           items: [
             { text: 'Creating a model', link: '/guide/models/' },
-            { text: 'Actions and API', link: '/guide/models/api' },
+            { text: 'CRUD stores and API', link: '/guide/models/api' },
             { text: 'Item actions', link: '/guide/models/item-actions' },
             { text: 'Singleton models', link: '/guide/models/singleton' },
             { text: 'Setting up relations', link: '/guide/models/relations' },
+            { text: 'Pagination settings', link: '/guide/models/pagination' },
           ]
         },
         {
@@ -37,7 +39,7 @@ export default {
             { text: 'Enabling server', link: '/guide/server/' },
             { text: 'Seeding mock data', link: '/guide/server/seeding' },
             { text: 'Mocking custom filters', link: '/guide/server/filters' },
-            // { text: 'Mocking sideeffects', link: '/guide/server/sideeffects' },
+            { text: 'Custom routes', link: '/guide/server/routes' },
           ]
         },
         {

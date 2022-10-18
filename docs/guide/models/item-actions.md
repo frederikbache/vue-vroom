@@ -1,26 +1,30 @@
 # Item actions
+
 Sometimes CRUD is not enough. For those situations use `itemActions`
 
 ```typescript
-const todo = defineModel({
+const book = defineModel({
     schema: {
         title: { type: String },
-        completed: { type: Boolean }
+        isFavourite: { type: Boolean }
     },
     itemActions: {
         toggle(item) {
-            return { completed: !item.completed }
+            return { isFavourite: !item.isFavourite }
         }
     }
 }):
 ```
-Each item action will request an api route in the form `model/:id/action` so in the example it would be `todos/:id/toggle`.
 
-The action will be added the model's store, that can be called with the id of the item you wish to trigger the action for
+Each item action will request an api route in the form `model/:id/action` so in
+the example it would be `books/:id/toggle`.
+
+The action will be added the model's store, that can be called with the id of
+the item you wish to trigger the action for
 
 ```typescript
-const todoStore = vroom.stores.todo();
+const bookStore = vroom.stores.bookStore();
 
-todoStore.toggle('1')
-// Will call /todos/1/toggle
+bookStore.toggle("1");
+// Will call /books/1/toggle
 ```

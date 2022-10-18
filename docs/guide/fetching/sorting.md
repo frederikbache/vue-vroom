@@ -1,16 +1,17 @@
 # Sorting lists
+
 To sort a list, use the `sort` prop and pass it an array of objects
 
 ```vue
 <template>
     <FetchList 
-        model="monsters" 
-        :sort="[{ field: 'challengeRating', dir: 'DESC' }]"
+        model="book" 
+        :sort="[{ field: 'title', dir: 'ASC' }]"
     >
-        <template #default="{ monsters }">
+        <template #default="{ bookItems }">
             <ul>
-                <li v-for="monster in monsters">
-                    {{ monster.name }} - {{ monster.challengeRating }}
+                <li v-for="book in bookItems">
+                    {{ book.title }}
                 </li>
             </ul>
         </template>
@@ -18,12 +19,7 @@ To sort a list, use the `sort` prop and pass it an array of objects
     </FetchList>
 </template>
 ```
-This will append a comma separated sort query param om the API call. Each descending sort field will be prefixed with `-` (e.g. `/monsters/?sort=-challengeRating`):
 
-<ul>
-    <li>Tarrasque - 30</li>
-    <li>Ancient red dragon - 24</li>
-    <li>Ancient gold dragon - 24</li>
-    <li>Kraken - 23</li>
-    <li>Empyrean - 23</li>
-</ul>
+This will append a comma separated sort query param om the API call. Each
+descending sort field will be prefixed with `-` (e.g.
+`/books/?sort=title,-year`):

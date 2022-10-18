@@ -1,35 +1,47 @@
 # Paginating lists
 
+FetchList let's you easily interact with models with pagination. Remember to
+[add pagination to your model](guide/models/pagination) first.
+
+## Page pagination
+
+To get a page of book model with page pagination enabled:
 
 ```vue
 <template>
     <FetchList 
-        model="monsters" 
+        model="book" 
         :pagination="{ page: 1, limit: 10 }"
     >
-        ...
+        
     </FetchList>
 </template>
 ```
 
 ## Cursor pagination
+
+For cursor based pagination you can use the nextCursor provided by meta. Here we
+also utilize a FetchList props called `merge-pages` that will append items when
+changing page instead of substituting them (useful for infinite lists like
+messages)
+
 ```vue
 <template>
   <FetchList
-    model='messages'
+    model='message'
     :pagination="{ cursor }"
     merge-pages
   >
-    <template #default="{ messages, meta }">
+    <template #default="{ messageItems, meta }">
       <ul>
-        <li v-for="message in messages">
+        <li v-for="message in messageItems">
           {{ message.content }}
         </li>
       </ul>
 
       <button
         v-if="meta.nextCursor"
-        @click="meta.loadMore()"
+        @click="cursor = meta.nextCursor"
       >
         Load more
       </button>
@@ -45,17 +57,20 @@ const cursor = ref('');
 ```
 
 ## An example
-The following example shows a list of items with prev and next buttons, that are hidden when changing page would lead to errors
+
+The following example shows a list of items with prev and next buttons, that are
+hidden when changing page would lead to errors
+
 ```vue
 <template>
     <FetchList 
-        model="monsters" 
+        model="book" 
         :pagination="{ page, limit: 10 }"
     >
-        <template #default="{ monsters, meta }">
+        <template #default="{ bookItems, meta }">
             <ul>
-                <li v-for="monster in monsters">
-                    {{ monster.name }}
+                <li v-for="book in bookItems">
+                    {{ book.title }}
                 </li>
             </ul>
 
