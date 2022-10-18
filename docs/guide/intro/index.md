@@ -20,7 +20,7 @@ build applications fast and even before backend is ready.
 
 ::: tip
 
-Vroom (and it's documentation) is still in alpha, so breaking changes might be
+Vroom (and its documentation) is still in alpha, so breaking changes might be
 introduced between each minor release.
 
 :::
