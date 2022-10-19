@@ -29,6 +29,7 @@ jobs:
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: ".coverage/coverage-final.json"
 
       - name: Archive code coverage results
         uses: actions/upload-artifact@v3
