@@ -93,7 +93,9 @@ export default function indexHandler(request: Request, db: any) {
     const included = {} as { [key: string]: any[] };
     includeList.forEach((field: string) => {
         const modelName = db[request.model].getRelatedModelName(field);
-        included[modelName] = []
+        if (!included[modelName]) {
+            included[modelName] = []
+        }
         items.forEach((item: any) => {
             const rels = db[request.model].getRelated(item.id, field);
             rels.forEach((rel: any) => {
