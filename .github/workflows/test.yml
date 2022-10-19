@@ -13,5 +13,8 @@ jobs:
           node-version: 16
       - run: npm ci
 
+      - name: Build
+        run: npm run build
+
       - name: Test types
         run: npm run test:type
