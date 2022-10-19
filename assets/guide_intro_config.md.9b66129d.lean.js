@@ -1,0 +1,1 @@
+import{_ as s,o as n,c as a,a as l}from"./app.c2023c36.js";const A=JSON.parse('{"title":"Config","description":"","frontmatter":{},"headers":[],"relativePath":"guide/intro/config.md"}'),o={name:"guide/intro/config.md"},p=l("",2),e=[p];function t(c,r,D,F,i,y){return n(),a("div",null,e)}const C=s(o,[["render",t]]);export{A as __pageData,C as default};
