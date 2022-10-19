@@ -254,7 +254,7 @@ export class Collection<Type extends HasId> {
         throw new ServerError(400, { type: 'related_model_not_found' })
     }
 
-    update(id: Type['id'], json: Type) {
+    update(id: Type['id'], json: Partial<Type>) {
         const idNormalised = this.idsAreNumbers && typeof id !== 'number' ? parseInt(id, 10) : id;
         const index = this.items.findIndex(item => item.id === idNormalised);
         if (index === -1) {
