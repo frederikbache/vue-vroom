@@ -313,15 +313,6 @@ export default class Server<DbType> {
 
     }
 
-    protected parseHeaders(headers: Headers | undefined) {
-        if (!headers) return {};
-        let h = {} as any;
-        for(let [k, v] of headers.entries()) {
-            h[k] = v;
-        }
-        return h;
-    }
-
     protected setupInterceptor(baseURL: string) {
         const originalFetch = window.fetch;
 
@@ -333,8 +324,7 @@ export default class Server<DbType> {
                 method: config ? config.method as RouteMethod : 'GET',
                 url: path.toString(),
                 body: config ? config.body?.toString() : '',
-                // @ts-expect-error
-                headers: this.parseHeaders(config?.headers)
+                headers: config?.headers
             }, baseURL)
 
             if (customResponse !== null) {

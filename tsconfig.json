@@ -17,14 +17,15 @@
     ],
     "skipLibCheck": true,
     "types": [
-      "node"
+      "node",
     ]
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.d.ts",
     "src/**/*.tsx",
-    "src/**/*.vue"
+    "src/**/*.vue",
+    "test"
   ],
   "exclude": ["test-dts"]
 }

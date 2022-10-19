@@ -8,7 +8,7 @@ type ApiRequest = {
     body?: ApiBody
 }
 
-const headers = new Headers();
+const headers = {} as any;
 
 function api(method: string, url: string, { params, body }: ApiRequest) {
     // @ts-expect-error

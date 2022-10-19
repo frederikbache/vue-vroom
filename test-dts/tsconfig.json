@@ -6,5 +6,5 @@
       "noImplicitReturns": false
     },
     "include": ["./"],
-    "exclude": ["../test", "../src", "../docs"]
+    "exclude": ["../test", "../src"]
   }
