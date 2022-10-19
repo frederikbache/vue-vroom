@@ -25,6 +25,11 @@ jobs:
       - name: Coverage
         run: npm run coverage
 
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Archive code coverage results
         uses: actions/upload-artifact@v3
         with:
