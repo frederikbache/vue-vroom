@@ -12,6 +12,11 @@ export default defineConfig(({ command, mode }) => {
   return {
     plugins: [vue(), dts()],
     base: "./",
+    test: {
+      coverage: {
+        provider: 'istanbul' // or 'c8'
+      },
+    },
     build: {
       lib: {
         entry: resolve(__dirname, "src/index.ts"),
