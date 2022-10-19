@@ -34,6 +34,18 @@ export default function singleHandler(request: Request, db: any) {
             rels.forEach((rel: any) => {
                 if (!included[modelName].find(r => r.id === rel.id)) included[modelName].push(rel)
             })
+
+            // Remove *Ids fields on the relations
+            const relatedHasMany = db[modelName].hasMany;
+            included[modelName] = included[modelName].map((item: any) => {
+                Object.keys(item).forEach(field => {
+                    const rel = field.replace(/Ids$/, '');
+                    if (rel in relatedHasMany) {
+                        delete item[field]
+                    }
+                })
+                return item;
+            })
         })
     }
 
