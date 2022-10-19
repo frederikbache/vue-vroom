@@ -1,5 +1,6 @@
 export default {
   title: 'Vue goes Vroom',
+  description: 'Type safe stores and mock API with minimal config',
   base: '/vue-vroom/',
 
   themeConfig: {
