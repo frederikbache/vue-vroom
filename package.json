@@ -27,7 +27,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build --watch",
+    "build": "vite build",
     "test": "vitest",
     "test:type": "tsc -p ./test-dts/tsconfig.json",
     "docs:dev": "vitepress dev docs --port 5174",
