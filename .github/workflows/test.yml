@@ -15,9 +15,12 @@ jobs:
 
       - name: Build
         run: npm run build
+      
+      - name: Test types
+        run: npm run test:type
 
       - name: Test
         run: npm test
-
-      - name: Test types
-        run: npm run test:type
+      
+      - name: Coverage
+        run: npm run coverage
