@@ -26,4 +26,5 @@
     "src/**/*.tsx",
     "src/**/*.vue"
   ],
+  "exclude": ["test-dts"]
 }

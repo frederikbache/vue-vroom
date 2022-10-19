@@ -192,8 +192,9 @@ function createStore(name: string, baseURL = '', settings: StoreSettings) {
     })
 }
 
-type ItemActions<T, Id> = {
-    [Property in keyof T]: (id: Id, data?: any) => void
+type ItemActions<T, ModelT> = {
+    // @ts-expect-error
+    [Property in keyof T]: (id: ModelT['id'], data?: any) => Promise<ModelT>
 }
 
 export default function createStores<Type, ModelInfo>(models: any, baseURL = '') {
@@ -209,19 +210,19 @@ export default function createStores<Type, ModelInfo>(models: any, baseURL = '')
     return stores as {
         // @ts-expect-error
         [K in keyof Type]: ModelInfo[K] extends { singleton: boolean } ? StoreDefinition<K,
-            { item: Type[K] },
+            { item: Omit<Type[K], 'id'> },
             {},
             // @ts-expect-error
-            ItemActions<ModelInfo[K]['itemActions'], Type[K]['id']> &
+            ItemActions<ModelInfo[K]['itemActions'], Omit<Type[K], 'id'>> &
             {
-                update: (data: Partial<Type[K]>) => Promise<(Type[K])>,
+                update: (data: Partial<Type[K]>) => Promise<(Omit<Type[K], 'id'>)>,
             }
         // @ts-expect-error
         > : StoreDefinition<K,
             { items: (Type[K])[] },
             {},
             // @ts-expect-error
-            ItemActions<ModelInfo[K]['itemActions'], Type[K]['id']> &
+            ItemActions<ModelInfo[K]['itemActions'], Type[K]> &
             {
                 create: (data: Partial<Type[K]>) => Promise<(Type[K])>,
                 // @ts-expect-error
