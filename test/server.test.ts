@@ -11,6 +11,7 @@ const vroom = createVroom({
             belongsTo: {
                 author: () => 'author'
             },
+            pagination: { type: 'page', defaultLimit: 10 },
             itemActions: {
                 toggleFavourite(item) {
                     return { isFavourite: !item.isFavourite }
@@ -21,10 +22,11 @@ const vroom = createVroom({
             schema: {
                 name: { type: String }
             },
+            pagination: { type: 'cursor', defaultLimit: 10 },
             hasMany: {
                 books: () => 'book'
             }
-        })
+        }),
     },
     server: {
         enable: true
@@ -46,12 +48,12 @@ describe('CRUD Actions', () => {
     })
 
     it('Can create an item', () => {
-        const response = post('/books', {
-            title: 'The Hobbit'
+        const response = post('/authors', {
+            name: 'J.R.R. Tolkien'
         })
 
         expect(response?.json().id).toBe('1');
-        expect(response?.json().title).toBe('The Hobbit');
+        expect(response?.json().name).toBe('J.R.R. Tolkien');
     })
 
     it('Can get a list of items', () => {
@@ -69,14 +71,27 @@ describe('CRUD Actions', () => {
 
     it('Can get a single item', () => {
         vroom.db.book.createMany(
-            { title: 'The Hobbit' },
+            { title: 'The Hobbit', author: vroom.db.author.create({name: 'J.R.R. Tolkien'}) },
             { title: 'The Lord of the Rings' }
         )
-        const response = get('/books/2');
+        let response = get('/books/1?include=author');
+        expect(response?.json().data).toStrictEqual(
+            { id: '1', title: 'The Hobbit', authorId: '1', isFavourite: false }
+        )
+        expect(response?.json().included).toStrictEqual({
+            author: [{id: '1', name: 'J.R.R. Tolkien'}]
+        })
 
+        response = get('/books/2');
         expect(response?.json().data).toStrictEqual(
             { id: '2', title: 'The Lord of the Rings', authorId: null, isFavourite: false }
         )
+    })
+
+    it('Single: 404', () => {
+        const response = get('/authors/1');
+        expect(response?.ok).toBe(false);
+        expect(response?.status).toBe(404);
     })
 
     it('Can get a list of items', () => {
@@ -96,6 +111,41 @@ describe('CRUD Actions', () => {
         expect(response?.json().included).toStrictEqual({
             author: [ { id: '1', name: 'J.R.R. Tolkien' }]
         })
+    })
+
+    it('List: pagination', () => {
+        vroom.db.book.createMany(...Array(25).fill('a').map(() => ({})));
+        vroom.db.author.createMany(...Array(25).fill('a').map(() => ({})));
+
+        let response = get('/books');
+        expect(response?.json().data.length).toBe(10);
+        expect(response?.json().meta.pages).toBe(3);
+
+        response = get('/books?page=3');
+        expect(response?.json().data.length).toBe(5);
+
+        response = get('/books?page=1&limit=20');
+        expect(response?.json().data.length).toBe(20);
+
+        response = get('/books?page=2&limit=20');
+        expect(response?.json().data.length).toBe(5);
+
+        response = get('/authors');
+        expect(response?.json().data.length).toBe(10);
+        expect(response?.json().meta.nextCursor).toBe('11');
+
+        response = get('/authors?cursor=11');
+        expect(response?.json().data.length).toBe(10);
+        expect(response?.json().meta.nextCursor).toBe('21');
+
+        response = get('/authors?cursor=21');
+        expect(response?.json().data.length).toBe(5);
+        expect(response?.json().meta.nextCursor).toBe(null);
+
+        // Invalid cursor
+        response = get('/authors?cursor=31');
+        expect(response?.ok).toBe(false);
+        expect(response?.status).toBe(404);
     })
 
     it('Can update an item', () => {
@@ -118,7 +168,13 @@ describe('CRUD Actions', () => {
         });
     })
 
-    it('Can get delete an item', () => {
+    it('Update: 404', () => {
+        const response = patch('/authors/1', {});
+        expect(response?.ok).toBe(false);
+        expect(response?.status).toBe(404);
+    })
+
+    it('Can delete an item', () => {
         vroom.db.book.createMany(
             { title: 'The Hobbit' },
             { title: 'The Lord of the Rings' }
@@ -133,6 +189,12 @@ describe('CRUD Actions', () => {
         ])
     })
 
+    it('Delete: 404', () => {
+        const response = destroy('/authors/1');
+        expect(response?.ok).toBe(false);
+        expect(response?.status).toBe(404);
+    })
+
     it('Can add an item action', () => {
         vroom.db.book.create({ title: 'The Hobbit', isFavourite: true });
 
@@ -140,5 +202,11 @@ describe('CRUD Actions', () => {
         expect(response?.json()).toStrictEqual({
             id: '1', title: 'The Hobbit', isFavourite: false, authorId: null
         })
+    })
+
+    it('Item action: 404', () => {
+        const response = post('/books/1/toggleFavourite');
+        expect(response?.ok).toBe(false);
+        expect(response?.status).toBe(404);
     })
 })

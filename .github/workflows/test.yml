@@ -15,9 +15,18 @@ jobs:
 
       - name: Build
         run: npm run build
+      
+      - name: Test types
+        run: npm run test:type
 
       - name: Test
         run: npm test
+      
+      - name: Coverage
+        run: npm run coverage
 
-      - name: Test types
-        run: npm run test:type
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-report
+          path: coverage
