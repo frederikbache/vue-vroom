@@ -13,6 +13,8 @@ export default defineConfig(({ command, mode }) => {
     plugins: [vue(), dts()],
     base: "./",
     test: {
+      globals: true,
+      environment: "jsdom",
       coverage: {
         provider: 'istanbul' // or 'c8'
       },
