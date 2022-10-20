@@ -6,6 +6,7 @@ build applications fast and even before backend is ready.
 See the [full documentation here](https://frederikbache.github.io/vue-vroom/).
 
 [![Test](https://github.com/frederikbache/vue-vroom/actions/workflows/test.yml/badge.svg)](https://github.com/frederikbache/vue-vroom/actions/workflows/test.yml)
+[![Coverage](https://codecov.io/gh/frederikbache/vue-vroom/branch/main/graph/badge.svg?token=76GGB6R78T)](https://codecov.io/gh/frederikbache/vue-vroom)
 [![Package](https://badgen.net/npm/v/vue-vroom)](https://www.npmjs.com/package/vue-vroom)
 
 # Getting started
