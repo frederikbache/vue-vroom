@@ -15,12 +15,15 @@ function matchType(a: string | number | boolean, b: string) {
 }
 
 const FILTER_FUNCTIONS = {
-    lt: (a: any, b: any) => a < matchType(a, b),
-    lte: (a: any, b: any) => a <= matchType(a, b),
-    gt: (a: any, b: any) => a > matchType(a, b),
-    gte: (a: any, b: any) => a >= matchType(a, b),
+    lt: (a: any, b: any) => typeof a === 'string' ? a.localeCompare(b) < 0 : a < matchType(a, b),
+    lte: (a: any, b: any) => typeof a === 'string' ? a.localeCompare(b) <= 0 : a <= matchType(a, b),
+    gt: (a: any, b: any) => typeof a === 'string' ? a.localeCompare(b) > 0 : a > matchType(a, b),
+    gte: (a: any, b: any) => typeof a === 'string' ? a.localeCompare(b) >= 0 : a >= matchType(a, b),
     between: (a: any, b: string) => {
         const c = b.split(',')
+        if (typeof a === 'string') {
+            return a.localeCompare(c[0]) > 0 && a.localeCompare(c[1]) < 0
+        }
         return a > matchType(a, c[0]) && a < matchType(a, c[1])
     },
     contains: (a: string, b: string) => a.indexOf(b) !== -1

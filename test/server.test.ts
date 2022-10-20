@@ -27,9 +27,24 @@ const vroom = createVroom({
                 books: () => 'book'
             }
         }),
+        foo: defineModel({
+            schema: {
+                bar: { type: String },
+                baz: { type: Number },
+                yes: { type: Boolean },
+            }
+        })
     },
     server: {
         enable: true
+    }
+})
+
+vroom.server?.addFilters({
+    foo: {
+        even(item) {
+            return item.baz % 2 === 0;
+        }
     }
 })
 
@@ -147,6 +162,68 @@ describe('CRUD Actions', () => {
         expect(response?.ok).toBe(false);
         expect(response?.status).toBe(404);
     })
+
+    it('List: sorting', () => {
+        vroom.db.foo.createMany(
+            { bar: 'Z', baz: 2 },
+            { bar: 'A', baz: 1 },
+            { bar: 'B', baz: 2 },
+            { bar: 'B', baz: 2 },
+            { bar: 'B', baz: 1 },
+            { bar: 'A', baz: 2 },
+        )
+
+        expect(get('/foos?sort=bar,-baz')?.json().data
+            .map((item: any) => item.id))
+            .toStrictEqual(['6', '2', '3', '4', '5', '1'])
+    })
+
+    it('List: filters', () => {
+        vroom.db.foo.createMany(
+            { bar: 'ZZZ', baz: 11 },
+            { bar: 'yyY', baz: 4, yes: true },
+            { bar: 'BBb', baz: 3, yes: false },
+            { bar: 'aaa', baz: 20 },
+            { bar: 'LLL', baz: 1 },
+            { bar: 'aAa', baz: 2 },
+        )
+
+        expect(get('/foos?baz=4')?.json().data
+            .map((item: any) => item.id))
+            .toStrictEqual(['2'])
+
+        expect(get('/foos?bar[contains]=a')?.json().data
+            .map((item: any) => item.id))
+            .toStrictEqual(['4', '6'])
+
+        expect(get('/foos?baz[gt]=3&baz[lte]=11')?.json().data
+            .map((item: any) => item.id))
+            .toStrictEqual(['1', '2'])
+
+        expect(get('/foos?baz[between]=2,15&bar[lt]=x')?.json().data
+            .map((item: any) => item.id))
+            .toStrictEqual(['3'])
+        
+        expect(get('/foos?bar[between]=b,m')?.json().data
+            .map((item: any) => item.id))
+            .toStrictEqual(['3', '5'])
+        
+        expect(get('/foos?bar[contains]=a&baz[gte]=20')?.json().data
+            .map((item: any) => item.id))
+            .toStrictEqual(['4'])
+        
+        expect(get('/foos?yes=false')?.json().data
+            .map((item: any) => item.id))
+            .toStrictEqual(['1', '3', '4', '5', '6'])
+        
+        expect(get('/foos?yes=true')?.json().data
+            .map((item: any) => item.id))
+            .toStrictEqual(['2'])
+
+        expect(get('/foos?even')?.json().data
+            .map((item: any) => item.id))
+            .toStrictEqual(['2', '4', '6'])
+    });
 
     it('Can update an item', () => {
         vroom.db.author.create({
