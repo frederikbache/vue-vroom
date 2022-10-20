@@ -1,3 +1,3 @@
-export * from '../dist/'
+export * from '../dist/';
 
-export function expectType<T>(value: T) {};
+export function expectType<T>(value: T) {}
