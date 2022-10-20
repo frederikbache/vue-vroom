@@ -20,16 +20,9 @@ jobs:
         run: npm run test:type
 
       - name: Test
-        run: npm test
-      
-      - name: Coverage
         run: npm run coverage
 
-      # - name: Coveralls
-      #   uses: coverallsapp/github-action@master
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     path-to-lcov: ".coverage/coverage-final.json"
+      - uses: codecov/codecov-action@v3
 
       - name: Archive code coverage results
         uses: actions/upload-artifact@v3
