@@ -41,7 +41,7 @@ vroom.api.post("/auth", {
   email: "test@test.test",
   password: "verysecret",
 }).then((res) => {
-  vroom.api.headers.set("authorization", `Bearer ${res.token}`);
+  vroom.api.headers["authorization"] = `Bearer ${res.token}`;
 }).catch((e) => {
   // Handle error
 });
