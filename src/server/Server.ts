@@ -271,14 +271,14 @@ export default class Server<DbType> {
                     headers
                 })
                 const response = route.handler(request, this.db);
-                console.groupCollapsed('%c' + method, 'background: green', url)
+                /* console.groupCollapsed('%c' + method, 'background: green', url)
                 console.log('Request', {
                     params: request.params,
                     query: request.query,
                     body: request.json
                 })
                 console.log('Response', response);
-                console.groupEnd();
+                console.groupEnd(); */
                 return {
                     ok: true,
                     json() {
