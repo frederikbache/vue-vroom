@@ -54,15 +54,21 @@ export type Rels<Many, Models, Id> = Many extends {
   [key: string]: () => string;
 }
   ? {
-      // @ts-expect-error
-      [K in keyof Many]?: (Id & Models[ReturnType<Many[K]>]['types'])[];
+      [K in keyof Many]?: (Id &
+        // @ts-expect-error
+        Models[ReturnType<Many[K]>]['types'] &
+        // @ts-expect-error
+        RelId<Models[ReturnType<Many[K]>]['belongsTo'], Id['id']>)[];
     }
   : {};
 
 export type Rel<One, Models, Id> = One extends { [key: string]: () => string }
   ? {
-      // @ts-expect-error
-      [K in keyof One]?: Id & Models[ReturnType<One[K]>]['types'];
+      [K in keyof One]?: Id &
+        // @ts-expect-error
+        Models[ReturnType<One[K]>]['types'] &
+        // @ts-expect-error
+        RelId<Models[ReturnType<One[K]>]['belongsTo'], Id['id']>;
     }
   : {};
 
