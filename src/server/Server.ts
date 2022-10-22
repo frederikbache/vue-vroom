@@ -371,14 +371,14 @@ export default class Server<DbType> {
       } catch (e) {
         const error = e as any;
         if ('status' in error) {
-          console.groupCollapsed('%c' + method, 'background: red', url);
+          /* console.groupCollapsed('%c' + method, 'background: red', url);
           console.log('Request', {
             params: request.params,
             query: request.query,
             body: request.json,
           });
           console.log('Server Error', error.status, error.data);
-          console.groupEnd();
+          console.groupEnd(); */
 
           this.logEvent('🚨 Server Error', error.status, error.data, 'error');
           return {

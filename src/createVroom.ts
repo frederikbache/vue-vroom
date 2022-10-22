@@ -30,6 +30,7 @@ export default function createVroom<Options extends Settings & { models: any }>(
     settings,
     server,
     stores,
+    cache,
     types: {} as ModelTypes,
     install(app: any) {
       app.provide('stores', stores);

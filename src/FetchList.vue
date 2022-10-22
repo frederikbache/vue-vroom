@@ -30,7 +30,8 @@ const props = defineProps({
 
 const emit = defineEmits(['ready']);
 
-const store = (inject('stores') as any)[props.model]();
+const stores = inject('stores') as any;
+const store = stores[props.model]();
 const cache = (inject('cache') as any)();
 const settings = (inject('models') as any)[props.model];
 
@@ -58,33 +59,41 @@ const isFailed = computed(() => state.value === 'failed');
 const error = ref({} as any);
 
 const ids = ref([] as any[]);
-const includeIds = ref({} as any);
 const meta = ref({} as any);
 
-const items = computed(() => {
+const itemMap = computed(() => {
   let all = store
     .list(ids.value)
     .sort(
       (a: any, b: any) => ids.value.indexOf(a.id) - ids.value.indexOf(b.id)
     );
+  const includes = {} as any;
   props.include.forEach((rel: string) => {
     const hasMany = rel in settings.hasMany;
-    const relStore = (inject('stores') as any)[relations.value[rel]()]();
+    const relModel = relations.value[rel]();
+    const relStore = stores[relModel]();
+    if (!includes[relModel]) includes[relModel] = [];
     all = all.map((item: any) => {
       const newItem = { ...item };
       if (hasMany) {
-        newItem[rel] = relStore.items.filter((relItem: any) =>
-          item[rel + 'Ids'].includes(relItem.id)
-        );
+        includes[relModel].push(...item[`${rel}Ids`]);
+        newItem[rel] = relStore.list(item[`${rel}Ids`]);
       } else {
-        newItem[rel] = relStore.items.find(
-          (relItem: any) => item[rel + 'Id'] === relItem.id
-        );
+        includes[relModel].push(item[`${rel}Id`]);
+        newItem[rel] = relStore.single(item[`${rel}Id`]);
       }
       return newItem;
     });
   });
-  return all;
+  return { items: all, includes };
+});
+
+const items = computed(() => {
+  return itemMap.value.items;
+});
+
+const includeIds = computed(() => {
+  return itemMap.value.includes;
 });
 
 function create(data: any) {
@@ -118,14 +127,6 @@ function fetch() {
       ids.value = props.mergePages ? [...ids.value, ...resIds] : resIds;
       meta.value = res.meta;
       state.value = 'none';
-
-      const newIncludeIds = {} as any;
-      if (res.included) {
-        Object.keys(res.included).forEach((name) => {
-          newIncludeIds[name] = res.included[name].map((m: any) => m.id);
-        });
-      }
-      includeIds.value = newIncludeIds;
       hasLoaded.value = true;
     })
     .catch((e: any) => {
@@ -139,7 +140,6 @@ watch(filterString, () => {
   fetch();
 });
 watch(ids, (newIds, oldIds) => {
-  // TODO swap method instead?
   cache.subscribe(props.model, newIds);
   cache.unsubscribe(props.model, oldIds);
 });
@@ -153,7 +153,6 @@ watch(includeIds, (newIds, oldIds) => {
   });
 });
 
-// TODO Test that this works
 onUnmounted(() => {
   cache.unsubscribe(props.model, ids.value);
   Object.keys(includeIds.value).forEach((model) => {
