@@ -198,6 +198,9 @@ function createStore(name: string, baseURL = '', settings: StoreSettings) {
           this.add([item]);
         });
       },
+      localUpdate(id: ID, patchData: any) {
+        this.add([{ id, ...patchData }]);
+      },
       delete(id: ID) {
         return api.delete(endpoint + '/' + id).then(() => {
           this.items = this.items.filter((item: any) => item.id !== id);
@@ -245,12 +248,19 @@ export default function createStores<Type, ModelInfo>(
           // @ts-expect-error
           K,
           { items: Type[K][] },
-          {},
+          {
+            single: () => (id: ID) => Type[K];
+          },
           // @ts-expect-error
           ItemActions<ModelInfo[K]['itemActions'], Type[K]> & {
             create: (data: Partial<Type[K]>) => Promise<Type[K]>;
 
             update: (
+              // @ts-expect-error
+              id: Type[K]['id'],
+              data: Partial<Type[K]>
+            ) => Promise<Type[K]>;
+            localUpdate: (
               // @ts-expect-error
               id: Type[K]['id'],
               data: Partial<Type[K]>

@@ -119,11 +119,30 @@ describe('FetchList.vue', () => {
     expect(vroom.cache().ids.book).toStrictEqual({ '1': 1, '2': 1 });
     expect(vroom.cache().ids.author).toStrictEqual({ '1': 1 });
 
+    // Add and refresh
     await vroom.stores.book().create({ title: 'Silmarillion', authorId: '1' });
     refresh();
     await flushPromises();
 
     expect(vroom.cache().ids.book).toStrictEqual({ '1': 1, '2': 1, '3': 1 });
     expect(vroom.cache().ids.author).toStrictEqual({ '1': 1 });
+
+    // Add and local update
+    const tales = await vroom.stores
+      .book()
+      .create({ title: 'Unfinished tales', authorId: '1' });
+    const author = vroom.stores.author().single('1');
+    vroom.stores.author().localUpdate('1', {
+      booksIds: [...(author.booksIds || []), tales.id],
+    });
+
+    await flushPromises();
+
+    expect(vroom.cache().ids.book).toStrictEqual({
+      '1': 1,
+      '2': 1,
+      '3': 1,
+      '4': 1,
+    });
   });
 });
