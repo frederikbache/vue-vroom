@@ -1,5 +1,43 @@
 import ServerError from '../../ServerError';
 
+function matchType(a: string | number | boolean, b: string) {
+  if (typeof a === 'boolean') return b === 'true';
+  return typeof a === 'number' ? parseFloat(b) : b;
+}
+
+const FILTER_FUNCTIONS = {
+  lt: (a: any, b: any) =>
+    typeof a === 'string' ? a.localeCompare(b) < 0 : a < matchType(a, b),
+  lte: (a: any, b: any) =>
+    typeof a === 'string' ? a.localeCompare(b) <= 0 : a <= matchType(a, b),
+  gt: (a: any, b: any) =>
+    typeof a === 'string' ? a.localeCompare(b) > 0 : a > matchType(a, b),
+  gte: (a: any, b: any) =>
+    typeof a === 'string' ? a.localeCompare(b) >= 0 : a >= matchType(a, b),
+  between: (a: any, b: string) => {
+    const c = b.split(',');
+    if (typeof a === 'string') {
+      return a.localeCompare(c[0]) > 0 && a.localeCompare(c[1]) < 0;
+    }
+    return a > matchType(a, c[0]) && a < matchType(a, c[1]);
+  },
+  contains: (a: string, b: string) => a.indexOf(b) !== -1,
+};
+
+export function parseFilterField(field: string) {
+  const match = field.match(/(.*)\[(.*)\]/);
+  if (!match) {
+    return { name: field, fn: (a: any, b: any) => a === matchType(a, b) };
+  }
+  const [, name, op] = match;
+
+  return {
+    name,
+    // @ts-expect-error
+    fn: FILTER_FUNCTIONS[op],
+  };
+}
+
 export function paginateItems(items: any[], page: number, limit: number) {
   return {
     paginatedItems: items.slice((page - 1) * limit, page * limit),

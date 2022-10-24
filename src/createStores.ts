@@ -78,8 +78,11 @@ function createSingletonStore(
       single: (state) => state.item,
     },
     actions: {
-      $fetch() {
-        return api.get(endpoint).then((res) => {
+      $fetch(filter: any) {
+        let params = {
+          ...parseFilters(filter),
+        };
+        return api.get(endpoint, params).then((res) => {
           if (settings.envelope === false) {
             this.item = res;
             return res;
@@ -88,8 +91,11 @@ function createSingletonStore(
           return res.data;
         });
       },
-      update(patchData: any) {
-        return api.patch(endpoint, patchData).then((item) => {
+      update(patchData: any, filter = {}) {
+        let params = {
+          ...parseFilters(filter),
+        };
+        return api.patch(endpoint, patchData, params).then((item) => {
           this.item = { ...item };
         });
       },
@@ -241,7 +247,10 @@ export default function createStores<Type, ModelInfo>(
           {},
           // @ts-expect-error
           ItemActions<ModelInfo[K]['itemActions'], Omit<Type[K], 'id'>> & {
-            update: (data: Partial<Type[K]>) => Promise<Omit<Type[K], 'id'>>;
+            update: (
+              data: Partial<Type[K]>,
+              filter?: object
+            ) => Promise<Omit<Type[K], 'id'>>;
           }
         >
       : StoreDefinition<
