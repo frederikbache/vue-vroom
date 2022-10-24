@@ -1,5 +1,6 @@
 import type { Request } from '../Server';
 import { cursorPaginate, paginateItems, sortItems } from './helpers';
+import { parseFilterField } from './helpers';
 
 type ListQuery = {
   page: number;
@@ -8,44 +9,6 @@ type ListQuery = {
   cursor: number | string;
   include: string;
 };
-
-function matchType(a: string | number | boolean, b: string) {
-  if (typeof a === 'boolean') return b === 'true';
-  return typeof a === 'number' ? parseFloat(b) : b;
-}
-
-const FILTER_FUNCTIONS = {
-  lt: (a: any, b: any) =>
-    typeof a === 'string' ? a.localeCompare(b) < 0 : a < matchType(a, b),
-  lte: (a: any, b: any) =>
-    typeof a === 'string' ? a.localeCompare(b) <= 0 : a <= matchType(a, b),
-  gt: (a: any, b: any) =>
-    typeof a === 'string' ? a.localeCompare(b) > 0 : a > matchType(a, b),
-  gte: (a: any, b: any) =>
-    typeof a === 'string' ? a.localeCompare(b) >= 0 : a >= matchType(a, b),
-  between: (a: any, b: string) => {
-    const c = b.split(',');
-    if (typeof a === 'string') {
-      return a.localeCompare(c[0]) > 0 && a.localeCompare(c[1]) < 0;
-    }
-    return a > matchType(a, c[0]) && a < matchType(a, c[1]);
-  },
-  contains: (a: string, b: string) => a.indexOf(b) !== -1,
-};
-
-function parseFilterField(field: string) {
-  const match = field.match(/(.*)\[(.*)\]/);
-  if (!match) {
-    return { name: field, fn: (a: any, b: any) => a === matchType(a, b) };
-  }
-  const [, name, op] = match;
-
-  return {
-    name,
-    // @ts-expect-error
-    fn: FILTER_FUNCTIONS[op],
-  };
-}
 
 export default function indexHandler(request: Request, db: any) {
   const { page, limit, cursor, sort, include, ...filters } =
