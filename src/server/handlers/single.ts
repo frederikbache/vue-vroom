@@ -1,11 +1,15 @@
-import type { Request } from '../Server';
+import Server, { type Request } from '../Server';
 import ServerError from '../../ServerError';
 
 type SingleQuery = {
   include?: string;
 };
 
-export default function singleHandler(request: Request, db: any) {
+export default function singleHandler(
+  request: Request,
+  db: any,
+  server: Server<any>
+) {
   const { id } = request.params;
   const { include } = request.query as SingleQuery;
   const item = db[request.model].find(id);
@@ -51,7 +55,7 @@ export default function singleHandler(request: Request, db: any) {
   }
 
   return {
-    data: item,
-    included,
+    [server.naming.dataSingle]: item,
+    [server.naming.included]: included,
   };
 }

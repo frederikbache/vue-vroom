@@ -1,6 +1,6 @@
 import { defineStore, type StoreDefinition } from 'pinia';
 import api from './api';
-import { ID, HasId } from './types';
+import { ID, ApiNames } from './types';
 
 type SortSettings = {
   field: string;
@@ -64,7 +64,8 @@ function createSortString(sort: SortSettings[]) {
 function createSingletonStore(
   name: string,
   baseURL = '',
-  settings: StoreSettings
+  settings: StoreSettings,
+  naming: ApiNames
 ) {
   const endpoint = settings.path
     ? baseURL + settings.path
@@ -87,8 +88,8 @@ function createSingletonStore(
             this.item = res;
             return res;
           }
-          this.item = res.data;
-          return res.data;
+          this.item = res[naming.dataSingle];
+          return res[naming.dataSingle];
         });
       },
       update(patchData: any, filter = {}) {
@@ -103,7 +104,12 @@ function createSingletonStore(
   });
 }
 
-function createStore(name: string, baseURL = '', settings: StoreSettings) {
+function createStore(
+  name: string,
+  baseURL = '',
+  settings: StoreSettings,
+  naming: ApiNames
+) {
   const endpoint = settings.path
     ? baseURL + settings.path
     : `${baseURL}/${name}`;
@@ -161,14 +167,14 @@ function createStore(name: string, baseURL = '', settings: StoreSettings) {
             this.add(res);
             return { items: res };
           }
-          this.add(res.data);
-          Object.entries(res.included).forEach(([name, models]) => {
+          this.add(res[naming.data]);
+          Object.entries(res[naming.included]).forEach(([name, models]) => {
             stores[name]().add(models);
           });
           return {
-            items: res.data,
-            meta: res.meta,
-            included: res.included,
+            items: res[naming.data],
+            meta: res[naming.meta],
+            included: res[naming.included],
           };
         });
       },
@@ -180,16 +186,16 @@ function createStore(name: string, baseURL = '', settings: StoreSettings) {
             this.add([res]);
             return res;
           }
-          this.add([res.data]);
-          if (res.included) {
-            Object.entries(res.included).forEach(([name, models]) => {
+          this.add([res[naming.dataSingle]]);
+          if (res[naming.included]) {
+            Object.entries(res[naming.included]).forEach(([name, models]) => {
               stores[name]().add(models);
             });
           }
           return {
-            item: res.data,
-            meta: res.meta,
-            included: res.included,
+            item: res[naming.dataSingle],
+            meta: res[naming.meta],
+            included: res[naming.included],
           };
         });
       },
@@ -226,14 +232,15 @@ type ItemActions<T, ModelT> = {
 
 export default function createStores<Type, ModelInfo>(
   models: any,
-  baseURL = ''
+  baseURL = '',
+  naming: ApiNames
 ) {
   Object.keys(models).forEach((name) => {
     const storeName = models[name].plural || `${name}s`;
     if (models[name].singleton) {
-      stores[name] = createSingletonStore(name, baseURL, models[name]);
+      stores[name] = createSingletonStore(name, baseURL, models[name], naming);
     } else {
-      stores[name] = createStore(storeName, baseURL, models[name]);
+      stores[name] = createStore(storeName, baseURL, models[name], naming);
     }
   });
 

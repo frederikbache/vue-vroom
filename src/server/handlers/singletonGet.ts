@@ -1,8 +1,13 @@
 import type { Request } from '../Server';
 import ServerError from '../../ServerError';
 import { parseFilterField } from './helpers';
+import Server from '../Server';
 
-export default function singletonGet(request: Request, db: any) {
+export default function singletonGet(
+  request: Request,
+  db: any,
+  server: Server<any>
+) {
   const filters = request.query;
 
   let items = db[request.model].all().filter((item: any) => {
@@ -25,7 +30,8 @@ export default function singletonGet(request: Request, db: any) {
   if (request.settings.envelope === false) {
     return item;
   }
+
   return {
-    data: item,
+    [server.naming.dataSingle]: item,
   };
 }

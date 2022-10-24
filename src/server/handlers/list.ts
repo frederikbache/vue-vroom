@@ -1,4 +1,5 @@
 import type { Request } from '../Server';
+import Server from '../Server';
 import { cursorPaginate, paginateItems, sortItems } from './helpers';
 import { parseFilterField } from './helpers';
 
@@ -10,7 +11,11 @@ type ListQuery = {
   include: string;
 };
 
-export default function indexHandler(request: Request, db: any) {
+export default function indexHandler(
+  request: Request,
+  db: any,
+  server: Server<any>
+) {
   const { page, limit, cursor, sort, include, ...filters } =
     request.query as ListQuery;
 
@@ -97,8 +102,8 @@ export default function indexHandler(request: Request, db: any) {
   });
 
   return {
-    data: items,
-    meta,
-    included,
+    [server.naming.data]: items,
+    [server.naming.meta]: meta,
+    [server.naming.included]: included,
   };
 }

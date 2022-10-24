@@ -3,7 +3,12 @@ import createHandler from './handlers/create';
 import updateHandler from './handlers/update';
 import singletonGet from './handlers/singletonGet';
 import singletonUpdate from './handlers/singletonUpdate';
-import type { ModelSettings, ServerSettings, Settings } from '../types';
+import type {
+  ApiNames,
+  ModelSettings,
+  ServerSettings,
+  Settings,
+} from '../types';
 import singleHandler from './handlers/single';
 import itemActionHandler from './handlers/itemAction';
 import deleteHandler from './handlers/delete';
@@ -16,7 +21,7 @@ type RawRequest = {
   headers?: object;
 };
 
-type RouteHandler = (request: Request, db: any) => void;
+type RouteHandler = (request: Request, db: any, server?: any) => void;
 type CustomRouteHandler<Db> = (
   request: SimpleRequest,
   db: Exclude<Db, null>
@@ -75,6 +80,7 @@ export default class Server<DbType> {
   protected filters: Filter<DbType>;
   protected addDevtoolsEvent: ((event: any) => void) | undefined;
   protected events: any[];
+  naming: ApiNames;
 
   constructor(settings: Settings, models: ModelDefinition, db: DbType) {
     this.routes = [];
@@ -96,6 +102,7 @@ export default class Server<DbType> {
     this.setupInterceptor(this.baseURL);
     this.filters = {} as Filter<DbType>;
     this.events = [];
+    this.naming = settings.naming as ApiNames;
   }
 
   /** Reset the server: truncates all db collections and removes overriden routes */
@@ -353,15 +360,7 @@ export default class Server<DbType> {
           body: request.json,
           headers,
         });
-        const response = route.handler(request, this.db);
-        /* console.groupCollapsed('%c' + method, 'background: green', url)
-                console.log('Request', {
-                    params: request.params,
-                    query: request.query,
-                    body: request.json
-                })
-                console.log('Response', response);
-                console.groupEnd(); */
+        const response = route.handler(request, this.db, this);
         return {
           ok: true,
           json() {
@@ -371,15 +370,6 @@ export default class Server<DbType> {
       } catch (e) {
         const error = e as any;
         if ('status' in error) {
-          /* console.groupCollapsed('%c' + method, 'background: red', url);
-          console.log('Request', {
-            params: request.params,
-            query: request.query,
-            body: request.json,
-          });
-          console.log('Server Error', error.status, error.data);
-          console.groupEnd(); */
-
           this.logEvent('🚨 Server Error', error.status, error.data, 'error');
           return {
             ok: false,

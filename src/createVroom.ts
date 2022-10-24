@@ -16,11 +16,21 @@ export default function createVroom<Options extends Settings & { models: any }>(
 
   const { models, ...settings } = options;
 
+  const namingWithDefault = {
+    data: options.naming?.data || 'data',
+    dataSingle: options.naming?.dataSingle || 'data',
+    included: options.naming?.included || 'included',
+    meta: options.naming?.meta || 'meta',
+  };
+
+  settings.naming = namingWithDefault;
+
   const db = __DEV__ ? createDb<ModelTypes>(options) : null;
   const server = __DEV__ ? createServer(settings, models, db) : null;
   const stores = createStores<ModelTypes, Options['models']>(
     models,
-    settings.baseURL
+    settings.baseURL,
+    namingWithDefault
   );
   const cache = createCache(stores);
 
