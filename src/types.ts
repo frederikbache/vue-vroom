@@ -29,11 +29,21 @@ export type ModelSettings = {
   };
 };
 
+export type ApiNames = {
+  data: string;
+  dataSingle: string;
+  meta: string;
+  included: string;
+};
+
 export type Settings = {
   baseURL?: string;
   server?: ServerSettings;
   idsAreNumbers?: boolean;
   idFactory?: (i: number) => string;
+  naming?: {
+    [key in keyof ApiNames]?: string;
+  };
 };
 
 type RelId<One, Id> = One extends { [key: string]: () => string }
