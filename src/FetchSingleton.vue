@@ -2,6 +2,7 @@
   <slot
     v-if="slots.all"
     v-bind="{ ...attrs, isLoading, isFailed, error }"
+    name="all"
   ></slot>
   <slot name="loading" v-else-if="isLoading" />
   <slot name="failed" v-else-if="isFailed" :error="error" />

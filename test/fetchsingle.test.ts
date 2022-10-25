@@ -86,6 +86,27 @@ describe('FetchSingle.vue', () => {
     expect(books[1].text()).toBe('The Lord of the Rings');
   });
 
+  it('Slot all', async () => {
+    vroom.db.book.create({ title: 'The Hobbit' });
+    const wrapper = mount(FetchSingle, {
+      props: { model: 'book', id: '1' },
+      global: {
+        provide: res._context.provides,
+      },
+      slots: {
+        default: `<template #all="{book, isLoading}">
+                    <div v-if="!isLoading">
+                      <p>Loading done</p>
+                    </div>
+                </template>`,
+      },
+    });
+
+    await flushPromises();
+
+    expect(wrapper.text()).toBe('Loading done');
+  });
+
   it('Custom path', () => {
     mount(FetchSingle, {
       props: { model: 'book', id: '1', path: '/some-other-path/1' },
