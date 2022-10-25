@@ -177,6 +177,26 @@ describe('FetchList.vue', () => {
     expect(book[1].text()).toBe('2 - Silmarillion');
   });
 
+  it('Slot all', async () => {
+    const wrapper = mount(FetchList, {
+      props: { model: 'book' },
+      global: {
+        provide: res._context.provides,
+      },
+      slots: {
+        default: `<template #all="{bookItems, isLoading}">
+                    <div v-if="!isLoading">
+                      <p>Loading done</p>
+                    </div>
+                </template>`,
+      },
+    });
+
+    await flushPromises();
+
+    expect(wrapper.text()).toBe('Loading done');
+  });
+
   it('Custom path', () => {
     mount(FetchList, {
       props: { model: 'book', path: '/some-other-path' },

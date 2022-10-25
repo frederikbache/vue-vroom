@@ -124,6 +124,29 @@ describe('FetchSingleton.vue', () => {
     expect(wrapper.text()).toBe('Date: 2022-01-02, Temp: 1');
   });
 
+  it('Slot all', async () => {
+    vroom.db.profile.create({
+      name: 'Alice',
+    });
+    const wrapper = mount(FetchSingleton, {
+      props: { model: 'profile' },
+      global: {
+        provide: res._context.provides,
+      },
+      slots: {
+        default: `<template #all="{profile, isLoading}">
+                    <div v-if="!isLoading">
+                      <p>Loading done</p>
+                    </div>
+                </template>`,
+      },
+    });
+
+    await flushPromises();
+
+    expect(wrapper.text()).toBe('Loading done');
+  });
+
   it('Custom path', () => {
     mount(FetchSingleton, {
       props: { model: 'profile', path: '/my-profile' },

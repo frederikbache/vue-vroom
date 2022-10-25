@@ -1,7 +1,8 @@
 <template>
   <slot
     v-if="slots.all"
-    v-bind="{ ...attrs, isLoading, isFailed, error }"
+    v-bind="{ ...attrs, isLoading: 'Hello', isFailed, error }"
+    name="all"
   ></slot>
   <slot name="loading" v-else-if="isLoading" />
   <slot name="failed" v-else-if="isFailed" :error="error" />
