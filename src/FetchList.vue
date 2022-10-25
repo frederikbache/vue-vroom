@@ -1,10 +1,7 @@
 <template>
   <slot
     v-if="slots.all"
-    :is-loading="100"
-    :is-failed="isFailed"
-    :error="error"
-    v-bind="attrs"
+    v-bind="{ ...attrs, isLoading, isFailed, error }"
     name="all"
   />
   <slot name="loading" v-else-if="isLoading" />
