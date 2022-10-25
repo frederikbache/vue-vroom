@@ -176,4 +176,19 @@ describe('FetchList.vue', () => {
     expect(book.length).toBe(2);
     expect(book[1].text()).toBe('2 - Silmarillion');
   });
+
+  it('Custom path', () => {
+    mount(FetchList, {
+      props: { model: 'book', path: '/some-other-path' },
+      global: {
+        provide: res._context.provides,
+      },
+    });
+
+    expect(spy).toHaveBeenCalledWith('/some-other-path', {
+      method: 'GET',
+      body: undefined,
+      headers: {},
+    });
+  });
 });

@@ -79,11 +79,11 @@ function createSingletonStore(
       single: (state) => state.item,
     },
     actions: {
-      $fetch(filter: any) {
+      $fetch(filter: any, overridePath: string | null) {
         let params = {
           ...parseFilters(filter),
         };
-        return api.get(endpoint, params).then((res) => {
+        return api.get(overridePath || endpoint, params).then((res) => {
           if (settings.envelope === false) {
             this.item = res;
             return res;
@@ -153,7 +153,8 @@ function createStore(
         filter: any,
         pagination: PaginationSettings,
         sort: SortSettings[],
-        include: string[]
+        include: string[],
+        overridePath: string | null
       ) {
         let params = {
           ...parseFilters(filter),
@@ -162,7 +163,7 @@ function createStore(
         if (sort.length) params.sort = createSortString(sort);
         if (include.length) params.include = include.join(',');
 
-        return api.get(endpoint, params).then((res) => {
+        return api.get(overridePath || endpoint, params).then((res) => {
           if (settings.envelope === false) {
             this.add(res);
             return { items: res };
@@ -178,26 +179,28 @@ function createStore(
           };
         });
       },
-      $single(id: ID, include: string[]) {
+      $single(id: ID, include: string[], overridePath: string | null) {
         let params = {} as any;
         if (include.length) params.include = include.join(',');
-        return api.get(endpoint + '/' + id, params).then((res) => {
-          if (settings.envelope === false) {
-            this.add([res]);
-            return res;
-          }
-          this.add([res[naming.dataSingle]]);
-          if (res[naming.included]) {
-            Object.entries(res[naming.included]).forEach(([name, models]) => {
-              stores[name]().add(models);
-            });
-          }
-          return {
-            item: res[naming.dataSingle],
-            meta: res[naming.meta],
-            included: res[naming.included],
-          };
-        });
+        return api
+          .get(overridePath || endpoint + '/' + id, params)
+          .then((res) => {
+            if (settings.envelope === false) {
+              this.add([res]);
+              return res;
+            }
+            this.add([res[naming.dataSingle]]);
+            if (res[naming.included]) {
+              Object.entries(res[naming.included]).forEach(([name, models]) => {
+                stores[name]().add(models);
+              });
+            }
+            return {
+              item: res[naming.dataSingle],
+              meta: res[naming.meta],
+              included: res[naming.included],
+            };
+          });
       },
       create(postData: any) {
         return api.post(endpoint, postData).then((item) => {

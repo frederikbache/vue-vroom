@@ -15,6 +15,7 @@ const props = defineProps({
   model: { type: String, required: true },
   filter: { type: Object, default: () => ({}) },
   loadOnUpdate: { type: Boolean, default: false },
+  path: { type: String, default: null },
 });
 
 // States
@@ -33,7 +34,7 @@ function fetch() {
   state.value = 'loading';
 
   store
-    .$fetch(props.filter)
+    .$fetch(props.filter, props.path)
     .then((res: any) => {
       hasLoaded.value = true;
       state.value = 'none';
