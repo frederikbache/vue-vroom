@@ -1,11 +1,15 @@
 <template>
-  <slot name="loading" v-if="isLoading" />
+  <slot
+    v-if="slots.all"
+    v-bind="{ ...attrs, isLoading, isFailed, error }"
+  ></slot>
+  <slot name="loading" v-else-if="isLoading" />
   <slot name="failed" v-else-if="isFailed" :error="error" />
   <slot name="default" v-else v-bind="attrs" />
 </template>
 
 <script lang="ts" setup>
-import { computed, inject, onUnmounted, ref, watch } from 'vue';
+import { computed, inject, onUnmounted, ref, useSlots, watch } from 'vue';
 
 type SortSettings = {
   field: string;
@@ -34,6 +38,7 @@ const stores = inject('stores') as any;
 const store = stores[props.model]();
 const cache = (inject('cache') as any)();
 const settings = (inject('models') as any)[props.model];
+const slots = useSlots();
 
 const hasLoaded = ref(false);
 

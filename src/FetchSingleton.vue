@@ -1,11 +1,15 @@
 <template>
-  <slot name="loading" v-if="isLoading" />
+  <slot
+    v-if="slots.all"
+    v-bind="{ ...attrs, isLoading, isFailed, error }"
+  ></slot>
+  <slot name="loading" v-else-if="isLoading" />
   <slot name="failed" v-else-if="isFailed" :error="error" />
   <slot name="default" v-else v-bind="attrs" />
 </template>
 
 <script lang="ts" setup>
-import { inject, computed, ref } from 'vue';
+import { inject, computed, ref, useSlots } from 'vue';
 
 const props = defineProps({
   model: { type: String, required: true },
@@ -23,6 +27,7 @@ const isFailed = computed(() => state.value === 'failed');
 const error = ref({} as any);
 
 const store = (inject('stores') as any)[props.model]();
+const slots = useSlots();
 
 function fetch() {
   state.value = 'loading';

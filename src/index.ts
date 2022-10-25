@@ -49,6 +49,33 @@ export type FetchListComponent<Instance> = {
           };
         }
       ) => VNode[];
+      all?: (
+        props: {
+          // @ts-expect-error
+          [K in keyof Instance['types'] as `${K}Items`]: Instance['types'][K][];
+        } & {
+          meta: {
+            // @ts-expect-error
+            nextCursor?: Instance['settings'] extends { idsAreNumbers: true }
+              ? number
+              : string;
+            page: number;
+            pages: number;
+            results: number;
+            refresh: () => void;
+            create: (data: any) => void;
+            pushId: (
+              // @ts-expect-error
+              id: Instance['settings'] extends { idsAreNumbers: true }
+                ? number
+                : string
+            ) => void;
+          };
+          isLoading: boolean;
+          isFailed: boolean;
+          error: { status: number; data?: any };
+        }
+      ) => VNode[];
       loading?: () => VNode[];
       failed?: (props: { error: { status: number; data?: any } }) => VNode[];
     };
@@ -70,6 +97,16 @@ export type FetchSingleComponent<Instance> = {
         // @ts-expect-error
         [K in keyof Instance['types']]: Instance['types'][K];
       }) => VNode[];
+      all?: (
+        props: {
+          // @ts-expect-error
+          [K in keyof Instance['types']]: Instance['types'][K];
+        } & {
+          isLoading: boolean;
+          isFailed: boolean;
+          error: { status: number; data?: any };
+        }
+      ) => VNode[];
       loading?: () => VNode[];
       failed?: (props: { error: { status: number; data?: any } }) => VNode[];
     };
@@ -87,6 +124,16 @@ export type FetchSingletonComponent<Instance> = {
         // @ts-expect-error
         [K in keyof Instance['types']]: Instance['types'][K];
       }) => VNode[];
+      all?: (
+        props: {
+          // @ts-expect-error
+          [K in keyof Instance['types']]: Instance['types'][K];
+        } & {
+          isLoading: boolean;
+          isFailed: boolean;
+          error: { status: number; data?: any };
+        }
+      ) => VNode[];
       loading?: () => VNode[];
       failed?: (props: { error: { status: number; data?: any } }) => VNode[];
     };

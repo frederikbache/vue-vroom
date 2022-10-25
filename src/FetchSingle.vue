@@ -1,11 +1,15 @@
 <template>
-  <slot name="loading" v-if="isLoading" />
+  <slot
+    v-if="slots.all"
+    v-bind="{ ...attrs, isLoading, isFailed, error }"
+  ></slot>
+  <slot name="loading" v-else-if="isLoading" />
   <slot name="failed" v-else-if="isFailed" :error="error" />
   <slot name="default" v-else v-bind="attrs" />
 </template>
 
 <script lang="ts" setup>
-import { watch, inject, computed, ref, onUnmounted } from 'vue';
+import { watch, inject, computed, ref, onUnmounted, useSlots } from 'vue';
 
 type ID = number | string;
 
@@ -35,6 +39,7 @@ const isLoading = computed(
 );
 const isFailed = computed(() => state.value === 'failed');
 const error = ref({} as any);
+const slots = useSlots();
 
 function fetch() {
   state.value = 'loading';
