@@ -191,9 +191,9 @@ describe('CRUD Actions', () => {
     expect(response?.json().data.length).toBe(10);
     expect(response?.json().meta.nextCursor).toBe('21');
 
-    response = get('/authors?cursor=21');
-    expect(response?.json().data.length).toBe(5);
-    expect(response?.json().meta.nextCursor).toBe(null);
+    response = get('/authors?cursor=21&limit=2');
+    expect(response?.json().data.length).toBe(2);
+    expect(response?.json().meta.nextCursor).toBe('23');
 
     // Invalid cursor
     response = get('/authors?cursor=31');

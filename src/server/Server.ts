@@ -279,7 +279,7 @@ export default class Server<DbType> {
         ) {
           value = parseInt(value, 10);
         }
-        query[k] = params.get(k);
+        query[k] = value;
       }
     }
     return query;
