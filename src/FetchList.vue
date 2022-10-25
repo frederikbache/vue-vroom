@@ -30,6 +30,7 @@ const props = defineProps({
   sort: { type: Array as () => SortSettings[], default: () => [] },
   mergePages: { type: Boolean, default: false },
   loadOnUpdate: { type: Boolean, default: false },
+  path: { type: String, default: null },
 });
 
 const emit = defineEmits(['ready']);
@@ -126,7 +127,13 @@ const attrs = computed(() => {
 function fetch() {
   state.value = 'loading';
   store
-    .$list(props.filter, props.pagination, props.sort, props.include)
+    .$list(
+      props.filter,
+      props.pagination,
+      props.sort,
+      props.include,
+      props.path
+    )
     .then((res: any) => {
       const resIds = res.items.map((item: any) => item.id);
       ids.value = props.mergePages ? [...ids.value, ...resIds] : resIds;

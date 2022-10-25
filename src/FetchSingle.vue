@@ -19,6 +19,7 @@ const props = defineProps({
   lazy: { type: Boolean, default: false },
   include: { type: Array as () => string[], default: () => [] },
   loadOnUpdate: { type: Boolean, default: false },
+  path: { type: String, default: null },
 });
 
 const includeIds = ref({} as any);
@@ -44,7 +45,7 @@ const slots = useSlots();
 function fetch() {
   state.value = 'loading';
   store
-    .$single(props.id, props.include)
+    .$single(props.id, props.include, props.path)
     .then((res: any) => {
       hasLoaded.value = true;
       state.value = 'none';

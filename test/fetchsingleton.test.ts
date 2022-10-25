@@ -123,4 +123,19 @@ describe('FetchSingleton.vue', () => {
     await flushPromises();
     expect(wrapper.text()).toBe('Date: 2022-01-02, Temp: 1');
   });
+
+  it('Custom path', () => {
+    mount(FetchSingleton, {
+      props: { model: 'profile', path: '/my-profile' },
+      global: {
+        provide: res._context.provides,
+      },
+    });
+
+    expect(spy).toHaveBeenCalledWith('/my-profile', {
+      method: 'GET',
+      body: undefined,
+      headers: {},
+    });
+  });
 });

@@ -85,4 +85,19 @@ describe('FetchSingle.vue', () => {
     expect(books[0].text()).toBe('The Hobbit');
     expect(books[1].text()).toBe('The Lord of the Rings');
   });
+
+  it('Custom path', () => {
+    mount(FetchSingle, {
+      props: { model: 'book', id: '1', path: '/some-other-path/1' },
+      global: {
+        provide: res._context.provides,
+      },
+    });
+
+    expect(spy).toHaveBeenCalledWith('/some-other-path/1', {
+      method: 'GET',
+      body: undefined,
+      headers: {},
+    });
+  });
 });
