@@ -10,7 +10,8 @@
 </template>
 
 <script lang="ts" setup>
-import { inject, computed, ref, useSlots } from 'vue';
+import { inject, computed, useSlots } from 'vue';
+import useFetchState from './useFetchState';
 
 const props = defineProps({
   model: { type: String, required: true },
@@ -19,17 +20,11 @@ const props = defineProps({
   path: { type: String, default: null },
 });
 
-// States
-const state = ref('none' as 'none' | 'loading' | 'updating' | 'failed');
-const hasLoaded = ref(false);
-const isLoading = computed(
-  () => state.value === 'loading' && (!hasLoaded.value || props.loadOnUpdate)
-);
-const isFailed = computed(() => state.value === 'failed');
-const error = ref({} as any);
-
 const store = (inject('stores') as any)[props.model]();
 const slots = useSlots();
+
+const { error, state, hasLoaded, isLoading, isFailed, handleError } =
+  useFetchState(props.loadOnUpdate);
 
 function fetch() {
   state.value = 'loading';
@@ -40,10 +35,7 @@ function fetch() {
       hasLoaded.value = true;
       state.value = 'none';
     })
-    .catch((e: any) => {
-      error.value = e;
-      state.value = 'failed';
-    });
+    .catch(handleError);
 }
 
 const item = computed(() => {
