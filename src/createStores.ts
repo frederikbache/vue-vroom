@@ -169,13 +169,15 @@ function createStore(
             return { items: res };
           }
           this.add(res[naming.data]);
-          Object.entries(res[naming.included]).forEach(([name, models]) => {
-            stores[name]().add(models);
-          });
+          Object.entries(res[naming.included] || {}).forEach(
+            ([name, models]) => {
+              stores[name]().add(models);
+            }
+          );
           return {
             items: res[naming.data],
-            meta: res[naming.meta],
-            included: res[naming.included],
+            meta: res[naming.meta] || {},
+            included: res[naming.included] || {},
           };
         });
       },
@@ -197,8 +199,8 @@ function createStore(
             }
             return {
               item: res[naming.dataSingle],
-              meta: res[naming.meta],
-              included: res[naming.included],
+              meta: res[naming.meta] || {},
+              included: res[naming.included] || {},
             };
           });
       },
