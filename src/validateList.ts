@@ -27,8 +27,10 @@ function validateItem(item: any, model: any) {
   const errors = [] as any[];
   Object.entries(schema).forEach(([k, v]) => {
     const value = v as any;
-    if (!(k in item) && !value.optional) {
-      errors.push({ id: item.id, type: 'field_missing', field: k });
+    if (!(k in item)) {
+      if (!value.optional) {
+        errors.push({ id: item.id, type: 'field_missing', field: k });
+      }
     } else if (typeof item[k] !== typeof value.type()) {
       errors.push({
         id: item.id,
