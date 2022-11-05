@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts" setup>
-import { inject, computed, useSlots } from 'vue';
+import { inject, computed, useSlots, watch } from 'vue';
 import useFetchState from './useFetchState';
 
 const props = defineProps({
@@ -48,5 +48,8 @@ const attrs = computed(() => {
   };
 });
 
+const filterString = computed(() => JSON.stringify(props.filter));
+
 fetch();
+watch(filterString, fetch);
 </script>
