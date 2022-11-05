@@ -1,6 +1,7 @@
 import { defineStore, type StoreDefinition } from 'pinia';
 import api from './api';
 import { ID, ApiNames } from './types';
+import createValidator from './validateResponse';
 
 type SortSettings = {
   field: string;
@@ -21,6 +22,7 @@ type StoreSettings = {
   };
 };
 
+let validator: ReturnType<typeof createValidator>;
 const stores = {} as any;
 
 function parseFilters(filterSettings: any) {
@@ -106,6 +108,7 @@ function createSingletonStore(
 
 function createStore(
   name: string,
+  modelName: string,
   baseURL = '',
   settings: StoreSettings,
   naming: ApiNames
@@ -162,47 +165,46 @@ function createStore(
         };
         if (sort.length) params.sort = createSortString(sort);
         if (include.length) params.include = include.join(',');
+        const url = overridePath || endpoint;
 
-        return api.get(overridePath || endpoint, params).then((res) => {
+        return api.get(url, params).then((res) => {
           if (settings.envelope === false) {
             this.add(res);
             return { items: res };
           }
-          this.add(res[naming.data]);
-          Object.entries(res[naming.included] || {}).forEach(
-            ([name, models]) => {
-              stores[name]().add(models);
-            }
-          );
-          return {
-            items: res[naming.data],
-            meta: res[naming.meta] || {},
-            included: res[naming.included] || {},
-          };
+          const items = res[naming.data];
+          const included = res[naming.included] || {};
+          const meta = res[naming.meta] || {};
+
+          validator.list(url, params, modelName, res);
+
+          this.add(items);
+          Object.entries(included).forEach(([name, models]) => {
+            stores[name]().add(models);
+          });
+          return { items, meta, included };
         });
       },
       $single(id: ID, include: string[], overridePath: string | null) {
         let params = {} as any;
         if (include.length) params.include = include.join(',');
-        return api
-          .get(overridePath || endpoint + '/' + id, params)
-          .then((res) => {
-            if (settings.envelope === false) {
-              this.add([res]);
-              return res;
-            }
-            this.add([res[naming.dataSingle]]);
-            if (res[naming.included]) {
-              Object.entries(res[naming.included]).forEach(([name, models]) => {
-                stores[name]().add(models);
-              });
-            }
-            return {
-              item: res[naming.dataSingle],
-              meta: res[naming.meta] || {},
-              included: res[naming.included] || {},
-            };
+        const url = overridePath || endpoint + '/' + id;
+        return api.get(url, params).then((res) => {
+          if (settings.envelope === false) {
+            this.add([res]);
+            return res;
+          }
+          const item = res[naming.dataSingle];
+          const included = res[naming.included] || {};
+          const meta = res[naming.meta] || {};
+
+          validator.single(url, params, modelName, res);
+          this.add([item]);
+          Object.entries(included).forEach(([name, models]) => {
+            stores[name]().add(models);
           });
+          return { item, meta, included };
+        });
       },
       create(postData: any) {
         return api.post(endpoint, postData).then((item) => {
@@ -242,12 +244,21 @@ export default function createStores<Type, ModelInfo>(
 ) {
   Object.keys(models).forEach((name) => {
     const storeName = models[name].plural || `${name}s`;
+
     if (models[name].singleton) {
       stores[name] = createSingletonStore(name, baseURL, models[name], naming);
     } else {
-      stores[name] = createStore(storeName, baseURL, models[name], naming);
+      stores[name] = createStore(
+        storeName,
+        name,
+        baseURL,
+        models[name],
+        naming
+      );
     }
   });
+
+  validator = createValidator(models, naming);
 
   return stores as {
     // @ts-expect-error

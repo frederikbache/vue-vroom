@@ -7,4 +7,11 @@ export default class ServerError extends Error {
     this.status = status;
     this.data = data || {};
   }
+
+  log(prepend = '') {
+    console.error(prepend, 'Vroom server error', {
+      status: this.status,
+      data: this.data,
+    });
+  }
 }

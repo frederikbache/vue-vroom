@@ -11,6 +11,7 @@
 
 <script lang="ts" setup>
 import { computed, inject, onUnmounted, ref, useSlots, watch } from 'vue';
+import useFetchState from './useFetchState';
 
 type SortSettings = {
   field: string;
@@ -42,8 +43,6 @@ const cache = (inject('cache') as any)();
 const settings = (inject('models') as any)[props.model];
 const slots = useSlots();
 
-const hasLoaded = ref(false);
-
 const relations = computed(() => ({
   ...settings.hasMany,
   ...settings.belongsTo,
@@ -57,13 +56,8 @@ const filterString = computed(
     JSON.stringify(props.sort)
 );
 
-// States
-const state = ref('none' as 'none' | 'loading' | 'updating' | 'failed');
-const isLoading = computed(
-  () => state.value === 'loading' && (!hasLoaded.value || props.loadOnUpdate)
-);
-const isFailed = computed(() => state.value === 'failed');
-const error = ref({} as any);
+const { error, state, hasLoaded, isLoading, isFailed, handleError } =
+  useFetchState(props.loadOnUpdate);
 
 const ids = ref([] as any[]);
 const meta = ref({} as any);
@@ -142,10 +136,7 @@ function fetch() {
       state.value = 'none';
       hasLoaded.value = true;
     })
-    .catch((e: any) => {
-      error.value = e;
-      state.value = 'failed';
-    });
+    .catch(handleError);
 }
 
 fetch();

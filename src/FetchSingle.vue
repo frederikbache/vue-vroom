@@ -11,6 +11,7 @@
 
 <script lang="ts" setup>
 import { watch, inject, computed, ref, onUnmounted, useSlots } from 'vue';
+import useFetchState from './useFetchState';
 
 type ID = number | string;
 
@@ -34,14 +35,10 @@ const relations = computed(() => ({
 }));
 
 // States
-const state = ref('none' as 'none' | 'loading' | 'updating' | 'failed');
-const hasLoaded = ref(false);
-const isLoading = computed(
-  () => state.value === 'loading' && (!hasLoaded.value || props.loadOnUpdate)
-);
-const isFailed = computed(() => state.value === 'failed');
-const error = ref({} as any);
 const slots = useSlots();
+
+const { error, state, hasLoaded, isLoading, isFailed, handleError } =
+  useFetchState(props.loadOnUpdate);
 
 function fetch() {
   state.value = 'loading';
@@ -59,10 +56,7 @@ function fetch() {
       }
       includeIds.value = newIncludeIds;
     })
-    .catch((e: any) => {
-      error.value = e;
-      state.value = 'failed';
-    });
+    .catch(handleError);
 }
 
 const item = computed(() => {
