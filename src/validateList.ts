@@ -82,12 +82,12 @@ export function validateList(
     errors.push({
       msg: `Response did not include "${naming.data}" object`,
     });
+  } else {
+    items.forEach((item: any) => {
+      const es = validateItem(item, models[model]);
+      if (es) errors.push(...es);
+    });
   }
-
-  items.forEach((item: any) => {
-    const es = validateItem(item, models[model]);
-    if (es) errors.push(...es);
-  });
 
   if (params.include) {
     if (!response[naming.included]) {
