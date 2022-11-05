@@ -8,14 +8,14 @@ class ValidationError extends Error {
   response: any;
 
   constructor(url: string, errors: any[], response: any) {
-    super();
+    super(`"${url}" sent invalid response`);
     this.url = url;
     this.errors = errors;
     this.response = response;
   }
 
-  log(prepend = '') {
-    console.error(prepend, `"${this.url}" sent invalid response:\n`, {
+  log(prepend = '', level = 'error' as 'error' | 'warn') {
+    console[level](prepend, `"${this.url}" sent invalid response:\n`, {
       errors: this.errors,
       response: this.response,
     });
@@ -63,7 +63,9 @@ export function validateSingle(
   if (es) errors.push(...es);
 
   if (errors.length > 0) {
-    throw new ValidationError(url, errors, response);
+    const e = new ValidationError(url, errors, response);
+    e.log('', 'warn');
+    throw e;
   }
 }
 
@@ -101,6 +103,8 @@ export function validateList(
   const urlWithSearch = searchString ? url + '?' + searchString : url;
 
   if (errors.length > 0) {
-    throw new ValidationError(urlWithSearch, errors, response);
+    const e = new ValidationError(urlWithSearch, errors, response);
+    e.log('', 'warn');
+    throw e;
   }
 }

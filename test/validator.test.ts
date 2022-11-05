@@ -82,6 +82,7 @@ describe('Response Validation', () => {
   });
 
   test('Type mismatch', async () => {
+    // @ts-expect-error
     vroom.db.author.create({ name: 1 });
 
     let errors = [] as any[];
