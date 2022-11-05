@@ -16,7 +16,7 @@ export default function useFetchState(loadOnUpdate: boolean) {
   function handleError(e: any) {
     if (!slots.failed) {
       if (e.log) {
-        e.log('FetchList unhandled:');
+        e.log('Fetch unhandled:');
       } else {
         console.error('FetchList unhandled failed state: ' + e.message);
       }

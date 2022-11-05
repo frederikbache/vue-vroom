@@ -1,7 +1,7 @@
 import { defineStore, type StoreDefinition } from 'pinia';
 import api from './api';
-import assert from './assert';
 import { ID, ApiNames } from './types';
+import createValidator from './validateResponse';
 
 type SortSettings = {
   field: string;
@@ -22,6 +22,7 @@ type StoreSettings = {
   };
 };
 
+let validator: ReturnType<typeof createValidator>;
 const stores = {} as any;
 
 function parseFilters(filterSettings: any) {
@@ -107,6 +108,7 @@ function createSingletonStore(
 
 function createStore(
   name: string,
+  modelName: string,
   baseURL = '',
   settings: StoreSettings,
   naming: ApiNames
@@ -174,10 +176,7 @@ function createStore(
           const included = res[naming.included] || {};
           const meta = res[naming.meta] || {};
 
-          assert(
-            Array.isArray(items),
-            `Response of "${url}" did not include "${naming.dataSingle}"`
-          );
+          validator.list(url, params, modelName, res);
 
           this.add(items);
           Object.entries(included).forEach(([name, models]) => {
@@ -198,10 +197,8 @@ function createStore(
           const item = res[naming.dataSingle];
           const included = res[naming.included] || {};
           const meta = res[naming.meta] || {};
-          assert(
-            !!item,
-            `Response of "${url}" did not include "${naming.dataSingle}"`
-          );
+
+          validator.single(url, params, modelName, res);
           this.add([item]);
           Object.entries(included).forEach(([name, models]) => {
             stores[name]().add(models);
@@ -247,12 +244,21 @@ export default function createStores<Type, ModelInfo>(
 ) {
   Object.keys(models).forEach((name) => {
     const storeName = models[name].plural || `${name}s`;
+
     if (models[name].singleton) {
       stores[name] = createSingletonStore(name, baseURL, models[name], naming);
     } else {
-      stores[name] = createStore(storeName, baseURL, models[name], naming);
+      stores[name] = createStore(
+        storeName,
+        name,
+        baseURL,
+        models[name],
+        naming
+      );
     }
   });
+
+  validator = createValidator(models, naming);
 
   return stores as {
     // @ts-expect-error

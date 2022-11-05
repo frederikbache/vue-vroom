@@ -121,4 +121,27 @@ describe('FetchSingle.vue', () => {
       headers: {},
     });
   });
+
+  it('Change ID', async () => {
+    const wrapper = mount(FetchSingle, {
+      props: { model: 'book', id: '1' },
+      global: {
+        provide: res._context.provides,
+      },
+    });
+
+    expect(spy).toHaveBeenCalledWith('/books/1', {
+      method: 'GET',
+      body: undefined,
+      headers: {},
+    });
+
+    await wrapper.setProps({ id: '2' });
+
+    expect(spy).toHaveBeenCalledWith('/books/2', {
+      method: 'GET',
+      body: undefined,
+      headers: {},
+    });
+  });
 });
