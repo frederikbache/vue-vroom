@@ -34,8 +34,6 @@ export default function createVroom<Options extends Settings & { models: any }>(
   );
   const cache = createCache(stores);
 
-  api.requestOptions = settings.requestOptions || {};
-
   return {
     api,
     db: db as VroomDb<Options['models'], IdType<Options>['id']>,
