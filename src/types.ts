@@ -36,6 +36,22 @@ export type ApiNames = {
   included: string;
 };
 
+export type FetchRequestOptions = {
+  mode?: 'no-cors' | 'cors' | 'same-origin';
+  credentials?: 'include' | 'same-origin' | 'omit';
+  cache?: 'default' | 'no-cache' | 'reload' | 'force-cache' | 'only-if-cached';
+  redirect?: 'manual' | 'follow' | 'error';
+  referrerPolicy?:
+    | 'no-referrer'
+    | 'no-referrer-when-downgrade'
+    | 'origin'
+    | 'origin-when-cross-origin'
+    | 'same-origin'
+    | 'strict-origin'
+    | 'strict-origin-when-cross-origin'
+    | 'unsafe-url';
+};
+
 export type Settings = {
   baseURL?: string;
   server?: ServerSettings;
@@ -44,6 +60,7 @@ export type Settings = {
   naming?: {
     [key in keyof ApiNames]?: string;
   };
+  requestOptions?: FetchRequestOptions;
 };
 
 type RelId<One, Id> = One extends { [key: string]: () => string }
