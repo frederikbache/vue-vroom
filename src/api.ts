@@ -1,4 +1,5 @@
 import ServerError from './ServerError';
+import { FetchRequestOptions } from './types';
 
 type ApiParams = { [key: string]: number | string };
 type ApiBody = { [key: string]: unknown };
@@ -9,12 +10,14 @@ type ApiRequest = {
 };
 
 const headers = {} as any;
+const requestOptions = {} as FetchRequestOptions;
 
 function api(method: string, url: string, { params, body }: ApiRequest) {
   // @ts-expect-error
   const searchString = params ? new URLSearchParams(params).toString() : '';
   const urlWithSearch = searchString ? url + '?' + searchString : url;
   return fetch(urlWithSearch, {
+    ...requestOptions,
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
@@ -29,6 +32,7 @@ function api(method: string, url: string, { params, body }: ApiRequest) {
 
 export default {
   headers,
+  requestOptions,
   get(url: string, params?: ApiParams) {
     return api('GET', url, { params });
   },
