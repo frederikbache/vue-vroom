@@ -60,7 +60,6 @@ export type Settings = {
   naming?: {
     [key in keyof ApiNames]?: string;
   };
-  requestOptions?: FetchRequestOptions;
 };
 
 type RelId<One, Id> = One extends { [key: string]: () => string }

@@ -16,6 +16,7 @@ function api(method: string, url: string, { params, body }: ApiRequest) {
   // @ts-expect-error
   const searchString = params ? new URLSearchParams(params).toString() : '';
   const urlWithSearch = searchString ? url + '?' + searchString : url;
+
   return fetch(urlWithSearch, {
     ...requestOptions,
     method,
