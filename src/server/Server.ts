@@ -12,6 +12,9 @@ import type {
 import singleHandler from './handlers/single';
 import itemActionHandler from './handlers/itemAction';
 import deleteHandler from './handlers/delete';
+import bulkCreateHandler from './handlers/bulk-create';
+import bulkUpdateHandler from './handlers/bulk-update';
+import bulkDeleteHandler from './handlers/bulk-delete';
 type RouteMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT';
 
 type RawRequest = {
@@ -129,6 +132,9 @@ export default class Server<DbType> {
         'read',
         'update',
         'delete',
+        'bulk-create',
+        'bulk-update',
+        'bulk-delete',
       ];
       const plural = settings.singleton ? name : settings.plural || `${name}s`;
       const path = settings.path || `/${plural}`;
@@ -178,6 +184,16 @@ export default class Server<DbType> {
           settings,
         });
       }
+
+      if (actions.includes('bulk-update')) {
+        this.routes.push({
+          method: 'PATCH',
+          path: `${path}/bulk`,
+          handler: bulkUpdateHandler,
+          model: name,
+          settings,
+        });
+      }
       if (actions.includes('update')) {
         this.routes.push({
           method: 'PATCH',
@@ -187,11 +203,29 @@ export default class Server<DbType> {
           settings,
         });
       }
+      if (actions.includes('bulk-delete')) {
+        this.routes.push({
+          method: 'DELETE',
+          path: `${path}/bulk`,
+          handler: bulkDeleteHandler,
+          model: name,
+          settings,
+        });
+      }
       if (actions.includes('delete')) {
         this.routes.push({
           method: 'DELETE',
           path: `${path}/:id`,
           handler: deleteHandler,
+          model: name,
+          settings,
+        });
+      }
+      if (actions.includes('bulk-create')) {
+        this.routes.push({
+          method: 'POST',
+          path: `${path}/bulk`,
+          handler: bulkCreateHandler,
           model: name,
           settings,
         });

@@ -174,4 +174,52 @@ describe('Stores', () => {
 
     expect(spy).toHaveBeenCalledTimes(1);
   });
+
+  it('Can bulk create', () => {
+    vroom.stores
+      .book()
+      .bulkCreate([{ title: 'Lord of the Rings' }, { title: 'The Hobbit' }])
+      .catch(() => {});
+
+    expect(spy).toHaveBeenCalledWith('/books/bulk', {
+      method: 'POST',
+      body: JSON.stringify([
+        { title: 'Lord of the Rings' },
+        { title: 'The Hobbit' },
+      ]),
+      headers: {},
+    });
+  });
+
+  it('Can bulk update', () => {
+    vroom.stores
+      .book()
+      .bulkUpdate([
+        { id: '1', title: 'Lord of the Rings' },
+        { id: '2', title: 'The Hobbit' },
+      ])
+      .catch(() => {});
+
+    expect(spy).toHaveBeenCalledWith('/books/bulk', {
+      method: 'PATCH',
+      body: JSON.stringify([
+        { id: '1', title: 'Lord of the Rings' },
+        { id: '2', title: 'The Hobbit' },
+      ]),
+      headers: {},
+    });
+  });
+
+  it('Can bulk delete', () => {
+    vroom.stores
+      .book()
+      .bulkDelete(['2', '1'])
+      .catch(() => {});
+
+    expect(spy).toHaveBeenCalledWith('/books/bulk', {
+      method: 'DELETE',
+      body: JSON.stringify([{ id: '2' }, { id: '1' }]),
+      headers: {},
+    });
+  });
 });

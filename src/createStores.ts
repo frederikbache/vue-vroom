@@ -212,9 +212,19 @@ function createStore(
           return item;
         });
       },
+      bulkCreate(data: any[]) {
+        return api.post(endpoint + '/bulk', data as any).then((items) => {
+          this.add(items);
+        });
+      },
       update(id: ID, patchData: any) {
         return api.patch(endpoint + '/' + id, patchData).then((item) => {
           this.add([item]);
+        });
+      },
+      bulkUpdate(data: any[]) {
+        return api.patch(endpoint + '/bulk', data as any).then((items) => {
+          this.add(items);
         });
       },
       localUpdate(id: ID, patchData: any) {
@@ -224,6 +234,15 @@ function createStore(
         return api.delete(endpoint + '/' + id).then(() => {
           this.items = this.items.filter((item: any) => item.id !== id);
         });
+      },
+      bulkDelete(ids: ID[]) {
+        return api
+          .delete(endpoint + '/bulk', ids.map((id) => ({ id })) as any)
+          .then(() => {
+            this.items = this.items.filter(
+              (item: any) => !ids.includes(item.id)
+            );
+          });
       },
       garbageCollect(ids: ID[]) {
         this.items = this.items.filter((item: any) => !ids.includes(item.id));
@@ -286,12 +305,14 @@ export default function createStores<Type, ModelInfo>(
           // @ts-expect-error
           ItemActions<ModelInfo[K]['itemActions'], Type[K]> & {
             create: (data: Partial<Type[K]>) => Promise<Type[K]>;
+            bulkCreate: (data: Partial<Type[K]>[]) => Promise<Type[K]>;
 
             update: (
               // @ts-expect-error
               id: Type[K]['id'],
               data: Partial<Type[K]>
             ) => Promise<Type[K]>;
+            bulkUpdate: (data: Partial<Type[K]>[]) => Promise<Type[K]>;
             localUpdate: (
               // @ts-expect-error
               id: Type[K]['id'],
@@ -299,6 +320,8 @@ export default function createStores<Type, ModelInfo>(
             ) => Promise<Type[K]>;
             // @ts-expect-error
             delete: (id: Type[K]['id']) => Promise<void>;
+            // @ts-expect-error
+            bulkDelete: (ids: Type[K]['id'][]) => Promise<void>;
           }
         >;
   };

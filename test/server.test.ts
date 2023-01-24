@@ -64,9 +64,12 @@ const patch = (url: string, body = {}) =>
 // @ts-expect-error;
 const get = (url) => vroom.server?.parseRequest({ method: 'GET', url }, '');
 
-const destroy = (url: string) =>
+const destroy = (url: string, body: any = undefined) =>
   // @ts-expect-error;
-  vroom.server?.parseRequest({ method: 'DELETE', url }, '');
+  vroom.server?.parseRequest(
+    { method: 'DELETE', url, body: body ? JSON.stringify(body) : undefined },
+    ''
+  );
 
 describe('CRUD Actions', () => {
   beforeEach(() => {
@@ -314,17 +317,17 @@ describe('CRUD Actions', () => {
 
   it('Can delete an item', () => {
     vroom.db.book.createMany(
-      { title: 'The Hobbit' },
-      { title: 'The Lord of the Rings' }
+      { title: 'The Lord of the Rings' },
+      { title: 'The Hobbit' }
     );
 
-    destroy('/books/1');
+    destroy('/books/2');
 
     const response = get('/books');
 
     expect(response?.json().data).toStrictEqual([
       {
-        id: '2',
+        id: '1',
         title: 'The Lord of the Rings',
         authorId: null,
         isFavourite: false,
@@ -354,5 +357,52 @@ describe('CRUD Actions', () => {
     const response = post('/books/1/toggleFavourite');
     expect(response?.ok).toBe(false);
     expect(response?.status).toBe(404);
+  });
+
+  it('Can bulk create', () => {
+    const response = post('/authors/bulk', [
+      { name: 'J.R.R. Tolkien' },
+      { name: 'George R.R. Martin' },
+    ]);
+
+    expect(response?.json().length).toBe(2);
+    expect(response?.json()[0].id).toBe('1');
+    expect(response?.json()[0].name).toBe('J.R.R. Tolkien');
+    expect(response?.json()[1].id).toBe('2');
+    expect(response?.json()[1].name).toBe('George R.R. Martin');
+  });
+
+  it('Can bulk update', () => {
+    vroom.db.book.createMany(
+      {
+        title: 'The Hobbit',
+      },
+      { title: 'The Lord of the Rings' }
+    );
+    vroom.db.author.create({ name: 'J.R.R. Tolkien' });
+
+    const response = patch('/books/bulk', [
+      { id: '1', authorId: '1' },
+      { id: '2', authorId: '1' },
+    ]);
+
+    expect(response?.json().length).toBe(2);
+    expect(response?.json()[0].id).toBe('1');
+    expect(response?.json()[0].authorId).toBe('1');
+    expect(response?.json()[1].id).toBe('2');
+    expect(response?.json()[1].authorId).toBe('1');
+  });
+
+  it('Can bulk delete', () => {
+    vroom.db.book.createMany(
+      { title: 'The Lord of the Rings' },
+      { title: 'The Hobbit' }
+    );
+
+    destroy('/books/bulk', [{ id: '1' }, { id: '2' }]);
+
+    const response = get('/books');
+
+    expect(response?.json().data).toStrictEqual([]);
   });
 });

@@ -43,7 +43,7 @@ export default {
   patch(url: string, body?: ApiBody, params?: ApiParams) {
     return api('PATCH', url, { body, params });
   },
-  delete(url: string, params?: ApiParams) {
-    return api('DELETE', url, { params });
+  delete(url: string, body?: ApiBody, params?: ApiParams) {
+    return api('DELETE', url, { body, params });
   },
 };
