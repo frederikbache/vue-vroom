@@ -46,6 +46,7 @@ const mockFetch = vi.fn((...args) => {
         method: config.method,
         url,
         body: config.body,
+        headers: {},
       },
       ''
     )
@@ -80,7 +81,7 @@ describe('FetchList.vue', () => {
     expect(spy).toHaveBeenCalledWith('/books', {
       method: 'GET',
       body: undefined,
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
     });
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -208,7 +209,7 @@ describe('FetchList.vue', () => {
     expect(spy).toHaveBeenCalledWith('/some-other-path', {
       method: 'GET',
       body: undefined,
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
     });
   });
 });

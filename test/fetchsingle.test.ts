@@ -44,6 +44,7 @@ const mockFetch = vi.fn((...args) => {
         method: config.method,
         url,
         body: config.body,
+        headers: {},
       },
       ''
     )
@@ -118,7 +119,7 @@ describe('FetchSingle.vue', () => {
     expect(spy).toHaveBeenCalledWith('/some-other-path/1', {
       method: 'GET',
       body: undefined,
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
     });
   });
 
@@ -133,7 +134,7 @@ describe('FetchSingle.vue', () => {
     expect(spy).toHaveBeenCalledWith('/books/1', {
       method: 'GET',
       body: undefined,
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
     });
 
     await wrapper.setProps({ id: '2' });
@@ -141,7 +142,7 @@ describe('FetchSingle.vue', () => {
     expect(spy).toHaveBeenCalledWith('/books/2', {
       method: 'GET',
       body: undefined,
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
     });
   });
 });

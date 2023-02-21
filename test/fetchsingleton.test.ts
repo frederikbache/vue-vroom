@@ -40,6 +40,7 @@ const mockFetch = vi.fn((...args) => {
         method: config.method,
         url,
         body: config.body,
+        headers: {},
       },
       ''
     )
@@ -158,7 +159,7 @@ describe('FetchSingleton.vue', () => {
     expect(spy).toHaveBeenCalledWith('/my-profile', {
       method: 'GET',
       body: undefined,
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
     });
   });
 });

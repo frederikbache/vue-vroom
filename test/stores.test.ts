@@ -42,7 +42,7 @@ describe('Stores', () => {
     expect(spy).toHaveBeenCalledWith('/books', {
       method: 'GET',
       body: undefined,
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
     });
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -59,7 +59,7 @@ describe('Stores', () => {
       {
         method: 'GET',
         body: undefined,
-        headers: {},
+        headers: { 'Content-Type': 'application/json' },
       }
     );
 
@@ -75,7 +75,7 @@ describe('Stores', () => {
     expect(spy).toHaveBeenCalledWith('/books?page=1&limit=10', {
       method: 'GET',
       body: undefined,
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
     });
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -100,7 +100,7 @@ describe('Stores', () => {
       {
         method: 'GET',
         body: undefined,
-        headers: {},
+        headers: { 'Content-Type': 'application/json' },
       }
     );
 
@@ -118,7 +118,7 @@ describe('Stores', () => {
       {
         method: 'GET',
         body: undefined,
-        headers: {},
+        headers: { 'Content-Type': 'application/json' },
       }
     );
 
@@ -133,7 +133,7 @@ describe('Stores', () => {
     expect(spy).toHaveBeenCalledWith('/books', {
       method: 'POST',
       body: JSON.stringify({ title: 'The Hobbit' }),
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
     });
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -152,7 +152,7 @@ describe('Stores', () => {
     expect(spy).toHaveBeenCalledWith('/books/1', {
       method: 'PATCH',
       body: JSON.stringify({ title: 'The Hobbit' }),
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
     });
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -169,7 +169,7 @@ describe('Stores', () => {
     expect(spy).toHaveBeenCalledWith('/books/1', {
       method: 'DELETE',
       body: undefined,
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
     });
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -187,7 +187,7 @@ describe('Stores', () => {
         { title: 'Lord of the Rings' },
         { title: 'The Hobbit' },
       ]),
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
     });
   });
 
@@ -206,7 +206,7 @@ describe('Stores', () => {
         { id: '1', title: 'Lord of the Rings' },
         { id: '2', title: 'The Hobbit' },
       ]),
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
     });
   });
 
@@ -219,7 +219,7 @@ describe('Stores', () => {
     expect(spy).toHaveBeenCalledWith('/books/bulk', {
       method: 'DELETE',
       body: JSON.stringify([{ id: '2' }, { id: '1' }]),
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
     });
   });
 });
