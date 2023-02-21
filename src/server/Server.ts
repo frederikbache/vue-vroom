@@ -55,6 +55,7 @@ type Filter<Db> = {
 
 type SimpleRequest = {
   json: object;
+  form: object;
   query: object;
   headers: object;
   params: { [key: string]: string };
