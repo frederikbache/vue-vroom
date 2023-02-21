@@ -51,23 +51,29 @@ vroom.server?.addFilters({
 const post = (url: string, body = {}) =>
   // @ts-expect-error;
   vroom.server?.parseRequest(
-    { method: 'POST', url, body: JSON.stringify(body) },
+    { method: 'POST', url, body: JSON.stringify(body), headers: {} },
     ''
   );
 
 const patch = (url: string, body = {}) =>
   // @ts-expect-error;
   vroom.server?.parseRequest(
-    { method: 'PATCH', url, body: JSON.stringify(body) },
+    { method: 'PATCH', url, body: JSON.stringify(body), headers: {} },
     ''
   );
 // @ts-expect-error;
-const get = (url) => vroom.server?.parseRequest({ method: 'GET', url }, '');
+const get = (url) =>
+  vroom.server?.parseRequest({ method: 'GET', url, headers: {} }, '');
 
 const destroy = (url: string, body: any = undefined) =>
   // @ts-expect-error;
   vroom.server?.parseRequest(
-    { method: 'DELETE', url, body: body ? JSON.stringify(body) : undefined },
+    {
+      method: 'DELETE',
+      url,
+      body: body ? JSON.stringify(body) : undefined,
+      headers: {},
+    },
     ''
   );
 

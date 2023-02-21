@@ -21,7 +21,7 @@ type RawRequest = {
   method: RouteMethod;
   url: string;
   body?: string;
-  headers?: object;
+  headers: { [key: string]: string };
 };
 
 type RouteHandler = (request: Request, db: any, server?: any) => void;
@@ -55,6 +55,7 @@ type Filter<Db> = {
 
 type SimpleRequest = {
   json: object;
+  form: object;
   query: object;
   headers: object;
   params: { [key: string]: string };
@@ -62,6 +63,7 @@ type SimpleRequest = {
 
 export type Request = {
   json: object;
+  form: object;
   query: object;
   params: { [key: string]: string };
   model: string;
@@ -373,13 +375,18 @@ export default class Server<DbType> {
     baseURL: string
   ) {
     const { path, query } = this.parseUrl(url, baseURL);
-    const jsonBody = body ? this.getJsonBody(body) : undefined;
+
+    const isForm = headers['Content-Type'] === 'multipart/form-data';
+
+    const formBody = isForm ? body : undefined;
+    const jsonBody = body && !isForm ? this.getJsonBody(body) : undefined;
 
     const { route, params } = this.findMatchingRoute(method, path);
     if (route) {
       const request = {
         query,
         json: jsonBody,
+        form: formBody,
         params,
         model: route.model,
         settings: route.settings,

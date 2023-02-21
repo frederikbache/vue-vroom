@@ -24,6 +24,7 @@ const mockFetch = vi.fn((...args) => {
         method: config.method,
         url,
         body: config.body,
+        headers: {},
       },
       ''
     )
