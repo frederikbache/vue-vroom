@@ -65,7 +65,7 @@ describe('Response Validation', () => {
 
   test('Envelope missing', async () => {
     intercept = () => {
-      return { ok: true, json: () => [] };
+      return { ok: true, body: [], json: () => [] };
     };
     let errors = [] as any[];
 
