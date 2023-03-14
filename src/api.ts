@@ -39,13 +39,10 @@ function api(
     body: payload as any,
   }).then((res) => {
     if (res.ok) {
-      try {
-        return res.json();
-      } catch {
-        return {};
-      }
+      if (!res.body) return;
+      return res.json();
     } else {
-      throw new ServerError(res.status, res.json());
+      throw new ServerError(res.status, res);
     }
   });
 }

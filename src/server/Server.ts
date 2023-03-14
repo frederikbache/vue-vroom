@@ -404,6 +404,7 @@ export default class Server<DbType> {
         const response = route.handler(request, this.db, this);
         return {
           ok: true,
+          body: response,
           json() {
             return response;
           },
