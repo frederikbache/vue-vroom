@@ -39,8 +39,16 @@ function api(
     body: payload as any,
   }).then((res) => {
     if (res.ok) {
-      if (!res.body) return;
-      return res.json();
+      const json = res.json();
+      if (json instanceof Promise) {
+        return json
+          .then((data) => data)
+          .catch(() => {
+            // Getting the JSON failed, return empty object
+            return {};
+          });
+      }
+      return json;
     } else {
       throw new ServerError(res.status, res);
     }
