@@ -22,6 +22,7 @@ const props = defineProps({
   include: { type: Array as () => string[], default: () => [] },
   loadOnUpdate: { type: Boolean, default: false },
   path: { type: String, default: null },
+  modelValue: { type: Object, default: undefined },
 });
 
 const includeIds = ref({} as any);
@@ -34,7 +35,7 @@ const relations = computed(() => ({
   ...settings.belongsTo,
 }));
 
-const emit = defineEmits(['loaded']);
+const emit = defineEmits(['loaded', 'update:modelValue']);
 
 // States
 const slots = useSlots();
@@ -113,6 +114,12 @@ watch(includeIds, (newIds, oldIds) => {
 watch(state, (newVal, oldVal) => {
   if (oldVal === 'loading' && newVal === 'none') {
     emit('loaded', item.value);
+  }
+});
+
+watch(item, (newVal) => {
+  if (props.modelValue !== undefined) {
+    emit('update:modelValue', newVal);
   }
 });
 

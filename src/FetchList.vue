@@ -33,9 +33,10 @@ const props = defineProps({
   mergePages: { type: Boolean, default: false },
   loadOnUpdate: { type: Boolean, default: false },
   path: { type: String, default: null },
+  modelValue: { type: Array, default: null },
 });
 
-const emit = defineEmits(['ready', 'loaded']);
+const emit = defineEmits(['ready', 'loaded', 'update:modelValue']);
 
 const stores = inject('stores') as any;
 const store = stores[props.model]();
@@ -173,6 +174,12 @@ emit('ready', {
 watch(state, (newVal, oldVal) => {
   if (oldVal === 'loading' && newVal === 'none') {
     emit('loaded', items.value);
+  }
+});
+
+watch(items, (newVal) => {
+  if (props.modelValue) {
+    emit('update:modelValue', newVal);
   }
 });
 </script>
