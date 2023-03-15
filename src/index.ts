@@ -92,6 +92,9 @@ export type FetchSingleComponent<Instance> = {
         ? number
         : string;
     };
+    $emit: {
+      (e: 'loaded', item: any): void;
+    };
     $slots: {
       default?: (props: {
         // @ts-expect-error
@@ -118,6 +121,9 @@ export type FetchSingletonComponent<Instance> = {
     $props: {
       // @ts-expect-error
       model: Instance extends object ? keyof Instance['types'] : string;
+    };
+    $emit: {
+      (e: 'loaded', item: any): void;
     };
     $slots: {
       default?: (props: {

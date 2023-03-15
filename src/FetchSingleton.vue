@@ -23,6 +23,8 @@ const props = defineProps({
 const store = (inject('stores') as any)[props.model]();
 const slots = useSlots();
 
+const emit = defineEmits(['loaded']);
+
 const { error, state, hasLoaded, isLoading, isFailed, handleError } =
   useFetchState(props.loadOnUpdate);
 
@@ -52,4 +54,10 @@ const filterString = computed(() => JSON.stringify(props.filter));
 
 fetch();
 watch(filterString, fetch);
+
+watch(state, (newVal, oldVal) => {
+  if (oldVal === 'loading' && newVal === 'none') {
+    emit('loaded', item.value);
+  }
+});
 </script>

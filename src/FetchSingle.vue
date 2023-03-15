@@ -34,6 +34,8 @@ const relations = computed(() => ({
   ...settings.belongsTo,
 }));
 
+const emit = defineEmits(['loaded']);
+
 // States
 const slots = useSlots();
 
@@ -106,6 +108,12 @@ watch(includeIds, (newIds, oldIds) => {
   Object.keys(oldIds).forEach((model) => {
     cache.unsubscribe(model, oldIds[model]);
   });
+});
+
+watch(state, (newVal, oldVal) => {
+  if (oldVal === 'loading' && newVal === 'none') {
+    emit('loaded', item.value);
+  }
 });
 
 // TODO Test that this works
