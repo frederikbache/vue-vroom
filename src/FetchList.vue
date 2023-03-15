@@ -35,7 +35,7 @@ const props = defineProps({
   path: { type: String, default: null },
 });
 
-const emit = defineEmits(['ready']);
+const emit = defineEmits(['ready', 'loaded']);
 
 const stores = inject('stores') as any;
 const store = stores[props.model]();
@@ -168,5 +168,11 @@ emit('ready', {
   refresh: fetch,
   pushId,
   create,
+});
+
+watch(state, (newVal, oldVal) => {
+  if (oldVal === 'loading' && newVal === 'none') {
+    emit('loaded', items.value);
+  }
 });
 </script>

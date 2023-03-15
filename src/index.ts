@@ -5,25 +5,25 @@ import ServerError from './ServerError';
 
 export type { VroomDb } from './server/createDb';
 
+type ReadyPayload<Instance> = {
+  refresh: () => void;
+  create: (data: any) => void;
+  pushId: (
+    // @ts-expect-error
+    id: Instance['settings'] extends { idsAreNumbers: true } ? number : string
+  ) => void;
+};
+
 export type FetchListComponent<Instance> = {
   new (): {
     $props: {
       // @ts-expect-error
       model: Instance extends object ? keyof Instance['types'] : string;
     };
-    $emit: (
-      event: 'ready',
-      fetch: {
-        refresh: () => void;
-        create: (data: any) => void;
-        pushId: (
-          // @ts-expect-error
-          id: Instance['settings'] extends { idsAreNumbers: true }
-            ? number
-            : string
-        ) => void;
-      }
-    ) => void;
+    $emit: {
+      (e: 'ready', fetch: ReadyPayload<Instance>): void;
+      (e: 'loaded', items: any[]): void;
+    };
     $slots: {
       default?: (
         props: {
