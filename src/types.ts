@@ -68,6 +68,7 @@ export type Settings = {
   naming?: {
     [key in keyof ApiNames]?: string;
   };
+  identityModel?: any;
 };
 
 type RelId<One, Id> = One extends { [key: string]: () => string }

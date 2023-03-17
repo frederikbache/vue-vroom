@@ -13,6 +13,7 @@ export default function createVroom<Options extends Settings & { models: any }>(
   options: Options
 ) {
   type ModelTypes = FieldTypes<Options['models'], IdType<Options>>;
+  type IdentityModel = ModelTypes[ReturnType<Options['identityModel']>];
 
   const { models, ...settings } = options;
 
@@ -26,7 +27,9 @@ export default function createVroom<Options extends Settings & { models: any }>(
   settings.naming = namingWithDefault;
 
   const db = __DEV__ ? createDb<ModelTypes>(options) : null;
-  const server = __DEV__ ? createServer(settings, models, db) : null;
+  const server = __DEV__
+    ? createServer<typeof db, IdentityModel>(settings, models, db)
+    : null;
   const stores = createStores<ModelTypes, Options['models']>(
     models,
     settings.baseURL,
