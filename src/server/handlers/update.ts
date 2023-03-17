@@ -18,5 +18,12 @@ export default function updateHandler(request: Request, db: any) {
       delete updatedItem[field];
     }
   });
+
+  if (request.sideEffects?.update) {
+    const result = request.sideEffects.update(updatedItem, db, request.json);
+    if (result) {
+      return result;
+    }
+  }
   return updatedItem;
 }

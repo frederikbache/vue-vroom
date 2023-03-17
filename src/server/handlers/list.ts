@@ -101,6 +101,13 @@ export default function indexHandler(
     });
   });
 
+  if (request.sideEffects?.index) {
+    const result = request.sideEffects.index(items, db);
+    if (result) {
+      items = result;
+    }
+  }
+
   return {
     [server.naming.data]: items,
     [server.naming.meta]: meta,

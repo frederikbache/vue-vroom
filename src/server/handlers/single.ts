@@ -12,7 +12,7 @@ export default function singleHandler(
 ) {
   const { id } = request.params;
   const { include } = request.query as SingleQuery;
-  const item = db[request.model].find(id);
+  let item = db[request.model].find(id);
 
   if (!item) throw new ServerError(404);
 
@@ -52,6 +52,13 @@ export default function singleHandler(
         return item;
       });
     });
+  }
+
+  if (request.sideEffects?.read) {
+    const result = request.sideEffects.read(item, db);
+    if (result) {
+      item = result;
+    }
   }
 
   return {
