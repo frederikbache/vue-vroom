@@ -1,4 +1,4 @@
-type ActionName =
+export type ActionName =
   | 'index'
   | 'create'
   | 'read'

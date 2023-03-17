@@ -4,6 +4,7 @@ import updateHandler from './handlers/update';
 import singletonGet from './handlers/singletonGet';
 import singletonUpdate from './handlers/singletonUpdate';
 import type {
+  ActionName,
   ApiNames,
   ModelSettings,
   ServerSettings,
@@ -53,6 +54,21 @@ type Filter<Db> = {
   };
 };
 
+type SideEffect<Db> = {
+  [K in keyof Partial<Db>]: {
+    // @ts-expect-error
+    index?: (items: Db[K]['items'][0][], db: Db) => Db[K]['items'][0][] | void;
+    // @ts-expect-error
+    create?: (item: Db[K]['items'][0], db: Db) => Db[K]['items'][0] | void;
+    // @ts-expect-error
+    read?: (item: Db[K]['items'][0], db: Db) => Db[K]['items'][0] | void;
+    // @ts-expect-error
+    update?: (item: Db[K]['items'][0], db: Db) => Db[K]['items'][0] | void;
+    // @ts-expect-error
+    delete?: (item: Db[K]['items'][0], db: Db) => void;
+  };
+};
+
 type SimpleRequest = {
   json: object;
   form: object;
@@ -72,6 +88,9 @@ export type Request = {
   filters: {
     [field: string]: (item: any, value: string, db: any) => boolean;
   };
+  sideEffects: {
+    [action in ActionName]?: (item: any, db: any) => any | void;
+  };
 };
 
 export default class Server<DbType> {
@@ -83,6 +102,7 @@ export default class Server<DbType> {
   protected settings: ServerSettings;
   protected idsAreNumbers: boolean;
   protected filters: Filter<DbType>;
+  protected sideEffects: SideEffect<DbType>;
   protected addDevtoolsEvent: ((event: any) => void) | undefined;
   protected events: any[];
   naming: ApiNames;
@@ -106,6 +126,7 @@ export default class Server<DbType> {
     this.generateRoutes(models);
     this.setupInterceptor(this.baseURL);
     this.filters = {} as Filter<DbType>;
+    this.sideEffects = {} as SideEffect<DbType>;
     this.events = [];
     this.naming = settings.naming as ApiNames;
   }
@@ -393,6 +414,8 @@ export default class Server<DbType> {
         headers: headers || {},
         // @ts-expect-error
         filters: this.filters ? this.filters[route.model] : {},
+        // @ts-expect-error
+        sideEffects: this.sideEffects ? this.sideEffects[route.model] : {},
       };
       try {
         this.logEvent('🛫 ' + method, url.replace(this.baseURL, ''), {
@@ -470,6 +493,21 @@ export default class Server<DbType> {
         ...this.filters[key],
         // @ts-expect-error
         ...filter,
+      };
+    });
+  }
+
+  /** Add on or more sideffects */
+  public addSideEffects(obj: SideEffect<DbType>) {
+    Object.entries(obj).forEach(([model, sideEffect]) => {
+      const key = model as keyof DbType;
+      if (!(model in this.sideEffects)) {
+        this.sideEffects[key] = {};
+      }
+      this.sideEffects[key] = {
+        ...this.sideEffects[key],
+        // @ts-expect-error
+        ...sideEffect,
       };
     });
   }
