@@ -1,4 +1,12 @@
-type ActionName = 'index' | 'create' | 'read' | 'update' | 'delete';
+type ActionName =
+  | 'index'
+  | 'create'
+  | 'read'
+  | 'update'
+  | 'delete'
+  | 'bulk-create'
+  | 'bulk-update'
+  | 'bulk-delete';
 
 export type ID = string | number;
 
