@@ -62,8 +62,14 @@ type SideEffect<Db> = {
     create?: (item: Db[K]['items'][0], db: Db) => Db[K]['items'][0] | void;
     // @ts-expect-error
     read?: (item: Db[K]['items'][0], db: Db) => Db[K]['items'][0] | void;
-    // @ts-expect-error
-    update?: (item: Db[K]['items'][0], db: Db) => Db[K]['items'][0] | void;
+    update?: (
+      // @ts-expect-error
+      item: Db[K]['items'][0],
+      db: Db,
+      // @ts-expect-error
+      patchData: Partial<Db[K]['items'][0]>
+      // @ts-expect-error
+    ) => Db[K]['items'][0] | void;
     // @ts-expect-error
     delete?: (item: Db[K]['items'][0], db: Db) => void;
   };
@@ -89,7 +95,7 @@ export type Request = {
     [field: string]: (item: any, value: string, db: any) => boolean;
   };
   sideEffects: {
-    [action in ActionName]?: (item: any, db: any) => any | void;
+    [action in ActionName]?: (item: any, db: any, data?: any) => any | void;
   };
 };
 

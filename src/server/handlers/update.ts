@@ -20,7 +20,7 @@ export default function updateHandler(request: Request, db: any) {
   });
 
   if (request.sideEffects?.update) {
-    const result = request.sideEffects.update(updatedItem, db);
+    const result = request.sideEffects.update(updatedItem, db, request.json);
     if (result) {
       return result;
     }
