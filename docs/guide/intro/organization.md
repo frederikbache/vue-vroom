@@ -12,6 +12,7 @@ A way to structure you vroom dir could be
 - `vroom/models/index.ts` returns all your model definitions
 - `vroom/seeds/index.ts` returns a function that seeds the db
 - `vroom/filters/index.ts` returns a function that add custom filters
+- `vroom/sideeffects/index.ts` returns a function that add side effects
 - `vroom/routes/index.ts` returns a function that add custom routes
 - `vroom/setup.ts` loads your model and creates the vroom instance
 - `vroom/index.ts` conditionally runds seed, filter and routes functions and

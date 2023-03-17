@@ -4,12 +4,10 @@ export default {
   base: '/vue-vroom/',
 
   themeConfig: {
-    nav: [
-      { text: 'Guide', link: '/guide/intro/' },
-    ],
+    nav: [{ text: 'Guide', link: '/guide/intro/' }],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/frederikbache/vue-vroom' }
+      { icon: 'github', link: 'https://github.com/frederikbache/vue-vroom' },
     ],
 
     sidebar: {
@@ -20,8 +18,11 @@ export default {
             { text: 'What is Vroom?', link: '/guide/intro/' },
             { text: 'Getting started', link: '/guide/intro/getting-started' },
             { text: 'Configuration', link: '/guide/intro/config' },
-            { text: 'Organisation / optimisation', link: '/guide/intro/organization' },
-          ]
+            {
+              text: 'Organisation / optimisation',
+              link: '/guide/intro/organization',
+            },
+          ],
         },
         {
           text: 'Models and relations',
@@ -32,7 +33,7 @@ export default {
             { text: 'Singleton models', link: '/guide/models/singleton' },
             { text: 'Setting up relations', link: '/guide/models/relations' },
             { text: 'Pagination settings', link: '/guide/models/pagination' },
-          ]
+          ],
         },
         {
           text: 'Server and mock data',
@@ -40,32 +41,42 @@ export default {
             { text: 'Enabling server', link: '/guide/server/' },
             { text: 'Seeding mock data', link: '/guide/server/seeding' },
             { text: 'Mocking custom filters', link: '/guide/server/filters' },
+            { text: 'Mocking side effects', link: '/guide/server/sideeffects' },
             { text: 'Custom routes', link: '/guide/server/routes' },
-          ]
+          ],
         },
         {
           text: 'Fetching models',
           items: [
-            { text: 'Showing lists with FetchList', link: '/guide/fetching/fetch-list' },
+            {
+              text: 'Showing lists with FetchList',
+              link: '/guide/fetching/fetch-list',
+            },
             { text: 'List sorting', link: '/guide/fetching/sorting' },
             { text: 'List pagination', link: '/guide/fetching/pagination' },
             { text: 'List filtering', link: '/guide/fetching/filters' },
-            { text: 'Showing single models with FetchSingle', link: '/guide/fetching/fetch-single' },
+            {
+              text: 'Showing single models with FetchSingle',
+              link: '/guide/fetching/fetch-single',
+            },
             { text: 'Including relations', link: '/guide/fetching/relations' },
             { text: 'FetchSingleton', link: '/guide/fetching/singleton' },
-          ]
+          ],
         },
         {
           text: 'Testing',
           items: [
-            { text: 'Using Vroom with Cypress', link: '/guide/testing/cypress' },
-          ]
+            {
+              text: 'Using Vroom with Cypress',
+              link: '/guide/testing/cypress',
+            },
+          ],
         },
-      ]
+      ],
     },
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2022-present Frederik Bache'
-    }
-  }
-}
+      copyright: 'Copyright © 2022-present Frederik Bache',
+    },
+  },
+};
