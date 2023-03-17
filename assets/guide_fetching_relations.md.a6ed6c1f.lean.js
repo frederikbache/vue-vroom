@@ -1,0 +1,1 @@
+import{_ as s,o as n,c as a,a as l}from"./app.dfdaa207.js";const A=JSON.parse('{"title":"Including relations","description":"","frontmatter":{},"headers":[],"relativePath":"guide/fetching/relations.md"}'),o={name:"guide/fetching/relations.md"},p=l("",5),t=[p];function e(D,c,F,r,y,i){return n(),a("div",null,t)}const u=s(o,[["render",e]]);export{A as __pageData,u as default};
