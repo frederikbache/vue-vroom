@@ -57,7 +57,7 @@ export default function singleHandler(
   if (request.sideEffects?.read) {
     const result = request.sideEffects.read(item, db);
     if (result) {
-      item = request;
+      item = result;
     }
   }
 

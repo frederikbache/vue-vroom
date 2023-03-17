@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createVroom, defineModel } from '.';
 
 const vroom = createVroom({
@@ -45,6 +45,40 @@ vroom.server?.addFilters({
     even(item) {
       return item.baz % 2 === 0;
     },
+  },
+});
+
+const mock = {
+  handleIndexSideEffect(items: any) {
+    return items;
+  },
+  handleCreateSideEffect(item: any) {
+    return { ...item, title: item.title + ' is a good book' };
+  },
+  handleUpdateSideEffect(item: any) {
+    return { ...item, title: item.title + ' was edited' };
+  },
+  handleSimpleSideEffect(item: any) {
+    return item;
+  },
+};
+
+const indexSpy = vi.spyOn(mock, 'handleIndexSideEffect');
+const createSpy = vi.spyOn(mock, 'handleCreateSideEffect');
+const updateSpy = vi.spyOn(mock, 'handleUpdateSideEffect');
+const simpleSpy = vi.spyOn(mock, 'handleSimpleSideEffect');
+
+vroom.server?.addSideEffects({
+  book: {
+    index: mock.handleIndexSideEffect,
+    create: mock.handleCreateSideEffect,
+    update: mock.handleUpdateSideEffect,
+    read: mock.handleSimpleSideEffect,
+    delete: mock.handleSimpleSideEffect,
+    /* create: mock.handleSideEffect,
+    read: mock.handleSideEffect,
+    update: mock.handleSideEffect,
+    delete: mock.handleSideEffect, */
   },
 });
 
@@ -410,5 +444,93 @@ describe('CRUD Actions', () => {
     const response = get('/books');
 
     expect(response?.json().data).toStrictEqual([]);
+  });
+
+  it('Side effect: index', () => {
+    vroom.db.book.createMany(
+      { title: 'The Lord of the Rings' },
+      { title: 'The Hobbit' }
+    );
+
+    indexSpy.mockClear();
+
+    get('/books');
+
+    expect(indexSpy).toBeCalledTimes(1);
+    expect(indexSpy).toHaveLastReturnedWith([
+      {
+        authorId: null,
+        id: '1',
+        isFavourite: false,
+        title: 'The Lord of the Rings',
+      },
+      { authorId: null, id: '2', isFavourite: false, title: 'The Hobbit' },
+    ]);
+  });
+
+  it('Side effects: create', () => {
+    createSpy.mockClear();
+
+    post('/books', {
+      title: 'Silmarillion',
+    });
+
+    expect(createSpy).toBeCalledTimes(1);
+    expect(createSpy).toHaveLastReturnedWith({
+      authorId: null,
+      id: '1',
+      isFavourite: false,
+      title: 'Silmarillion is a good book',
+    });
+  });
+
+  it('Side effects: read', () => {
+    vroom.db.book.createMany({ title: 'The Lord of the Rings' });
+
+    simpleSpy.mockClear();
+
+    get('/books/1');
+
+    expect(simpleSpy).toBeCalledTimes(1);
+    expect(simpleSpy).toHaveLastReturnedWith({
+      authorId: null,
+      id: '1',
+      isFavourite: false,
+      title: 'The Lord of the Rings',
+    });
+  });
+
+  it('Side effects: update', () => {
+    vroom.db.book.createMany({ title: 'The Lord of the Rings' });
+
+    updateSpy.mockClear();
+
+    patch('/books/1', {
+      isFavourite: true,
+    });
+
+    expect(updateSpy).toBeCalledTimes(1);
+    expect(updateSpy).toHaveLastReturnedWith({
+      authorId: null,
+      id: '1',
+      isFavourite: true,
+      title: 'The Lord of the Rings was edited',
+    });
+  });
+
+  it('Side effects: delete', () => {
+    vroom.db.book.createMany({ title: 'The Lord of the Rings' });
+
+    simpleSpy.mockClear();
+
+    destroy('/books/1');
+
+    expect(simpleSpy).toBeCalledTimes(1);
+    expect(simpleSpy).toHaveLastReturnedWith({
+      authorId: null,
+      id: '1',
+      isFavourite: false,
+      title: 'The Lord of the Rings',
+    });
   });
 });
