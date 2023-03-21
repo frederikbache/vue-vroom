@@ -26,8 +26,8 @@ type RawRequest = {
 };
 
 type RouteHandler = (request: Request, db: any, server?: any) => void;
-type CustomRouteHandler<Db> = (
-  request: SimpleRequest,
+type CustomRouteHandler<Db, IdentityModel> = (
+  request: SimpleRequest<IdentityModel>,
   db: Exclude<Db, null>
 ) => void;
 
@@ -54,33 +54,54 @@ type Filter<Db> = {
   };
 };
 
-type SideEffect<Db> = {
+type SideEffect<Db, IdentityModel> = {
   [K in keyof Partial<Db>]: {
-    // @ts-expect-error
-    index?: (items: Db[K]['items'][0][], db: Db) => Db[K]['items'][0][] | void;
-    // @ts-expect-error
-    create?: (item: Db[K]['items'][0], db: Db) => Db[K]['items'][0] | void;
-    // @ts-expect-error
-    read?: (item: Db[K]['items'][0], db: Db) => Db[K]['items'][0] | void;
+    index?: (
+      // @ts-expect-error
+      items: Db[K]['items'][0][],
+      db: Db,
+      request: SimpleRequest<IdentityModel>
+      // @ts-expect-error
+    ) => Db[K]['items'][0][] | void;
+
+    create?: (
+      // @ts-expect-error
+      item: Db[K]['items'][0],
+      db: Db,
+      request: SimpleRequest<IdentityModel>
+      // @ts-expect-error
+    ) => Db[K]['items'][0] | void;
+
+    read?: (
+      // @ts-expect-error
+      item: Db[K]['items'][0],
+      db: Db,
+      request: SimpleRequest<IdentityModel>
+      // @ts-expect-error
+    ) => Db[K]['items'][0] | void;
     update?: (
       // @ts-expect-error
       item: Db[K]['items'][0],
       db: Db,
-      // @ts-expect-error
-      patchData: Partial<Db[K]['items'][0]>
+      request: SimpleRequest<IdentityModel>
       // @ts-expect-error
     ) => Db[K]['items'][0] | void;
-    // @ts-expect-error
-    delete?: (item: Db[K]['items'][0], db: Db) => void;
+    delete?: (
+      // @ts-expect-error
+      item: Db[K]['items'][0],
+      db: Db,
+      request: SimpleRequest<IdentityModel>
+    ) => void;
   };
 };
 
-type SimpleRequest = {
+type SimpleRequest<IdentityModel> = {
   json: object;
   form: object;
   query: object;
   headers: object;
   params: { [key: string]: string };
+  identity?: IdentityModel;
 };
 
 export type Request = {
@@ -97,18 +118,21 @@ export type Request = {
   sideEffects: {
     [action in ActionName]?: (item: any, db: any, data?: any) => any | void;
   };
+  identity: any;
 };
 
-export default class Server<DbType> {
+export default class Server<DbType, IdentityModel> {
   protected routes: Route[];
   protected customRoutes: Route[];
   protected overrides: Route[];
   protected db: DbType;
+  public identityModel: string;
+  public identity: IdentityModel | null;
   protected baseURL: string;
   protected settings: ServerSettings;
   protected idsAreNumbers: boolean;
   protected filters: Filter<DbType>;
-  protected sideEffects: SideEffect<DbType>;
+  protected sideEffects: SideEffect<DbType, IdentityModel>;
   protected addDevtoolsEvent: ((event: any) => void) | undefined;
   protected events: any[];
   naming: ApiNames;
@@ -129,10 +153,14 @@ export default class Server<DbType> {
       this.settings = settings.server || {};
     }
     this.idsAreNumbers = settings.idsAreNumbers || false;
+    this.identityModel = settings.identityModel
+      ? settings.identityModel()
+      : null;
+    this.identity = null;
     this.generateRoutes(models);
     this.setupInterceptor(this.baseURL);
     this.filters = {} as Filter<DbType>;
-    this.sideEffects = {} as SideEffect<DbType>;
+    this.sideEffects = {} as SideEffect<DbType, IdentityModel>;
     this.events = [];
     this.naming = settings.naming as ApiNames;
   }
@@ -277,7 +305,7 @@ export default class Server<DbType> {
   protected addCustomRoute(
     method: RouteMethod,
     path: string,
-    handler: CustomRouteHandler<DbType>
+    handler: CustomRouteHandler<DbType, IdentityModel>
   ) {
     this.customRoutes.push({ method, path, handler, model: '', settings: {} });
   }
@@ -285,48 +313,69 @@ export default class Server<DbType> {
   protected override(
     method: RouteMethod,
     path: string,
-    handler: CustomRouteHandler<DbType>
+    handler: CustomRouteHandler<DbType, IdentityModel>
   ) {
     this.overrides.push({ method, path, handler, model: '', settings: {} });
   }
 
   /** Add a custom GET route */
-  public get(path: string, handler: CustomRouteHandler<DbType>) {
+  public get(path: string, handler: CustomRouteHandler<DbType, IdentityModel>) {
     this.addCustomRoute('GET', path, handler);
   }
 
   /** Add a custom PATCH route */
-  public patch(path: string, handler: CustomRouteHandler<DbType>) {
+  public patch(
+    path: string,
+    handler: CustomRouteHandler<DbType, IdentityModel>
+  ) {
     this.addCustomRoute('PATCH', path, handler);
   }
 
   /** Add a custom POST route */
-  public post(path: string, handler: CustomRouteHandler<DbType>) {
+  public post(
+    path: string,
+    handler: CustomRouteHandler<DbType, IdentityModel>
+  ) {
     this.addCustomRoute('POST', path, handler);
   }
 
   /** Add a custom DELETE route */
-  public delete(path: string, handler: CustomRouteHandler<DbType>) {
+  public delete(
+    path: string,
+    handler: CustomRouteHandler<DbType, IdentityModel>
+  ) {
     this.addCustomRoute('DELETE', path, handler);
   }
 
   /** Add a temporary GET route (will be removed if server.reset is called) */
-  public overrideGet(path: string, handler: CustomRouteHandler<DbType>) {
+  public overrideGet(
+    path: string,
+    handler: CustomRouteHandler<DbType, IdentityModel>
+  ) {
     this.override('GET', path, handler);
   }
 
   /** Add a temporary PATCH route (will be removed if server.reset is called) */
-  public overridePatch(path: string, handler: CustomRouteHandler<DbType>) {
+  public overridePatch(
+    path: string,
+    handler: CustomRouteHandler<DbType, IdentityModel>
+  ) {
     this.override('PATCH', path, handler);
   }
 
   /** Add a temporary POST route (will be removed if server.reset is called) */
-  public overridePost(path: string, handler: CustomRouteHandler<DbType>) {
+  public overridePost(
+    path: string,
+    handler: CustomRouteHandler<DbType, IdentityModel>
+  ) {
     this.override('POST', path, handler);
   }
 
   /** Add a temporary DELETE route (will be removed if server.reset is called) */
-  public overrideDelete(path: string, handler: CustomRouteHandler<DbType>) {
+  public overrideDelete(
+    path: string,
+    handler: CustomRouteHandler<DbType, IdentityModel>
+  ) {
     this.override('DELETE', path, handler);
   }
 
@@ -408,6 +457,12 @@ export default class Server<DbType> {
     const formBody = isForm ? body : undefined;
     const jsonBody = body && !isForm ? this.getJsonBody(body) : undefined;
 
+    if (headers['authorization'] && this.identityModel) {
+      const [, token] = headers['authorization'].split(' ');
+      // @ts-expect-error
+      this.identity = this.db[this.identityModel].find(token);
+    }
+
     const { route, params } = this.findMatchingRoute(method, path);
     if (route) {
       const request = {
@@ -422,6 +477,7 @@ export default class Server<DbType> {
         filters: this.filters ? this.filters[route.model] : {},
         // @ts-expect-error
         sideEffects: this.sideEffects ? this.sideEffects[route.model] : {},
+        identity: this.identity,
       };
       try {
         this.logEvent('🛫 ' + method, url.replace(this.baseURL, ''), {
@@ -504,7 +560,7 @@ export default class Server<DbType> {
   }
 
   /** Add on or more sideffects */
-  public addSideEffects(obj: SideEffect<DbType>) {
+  public addSideEffects(obj: SideEffect<DbType, IdentityModel>) {
     Object.entries(obj).forEach(([model, sideEffect]) => {
       const key = model as keyof DbType;
       if (!(model in this.sideEffects)) {

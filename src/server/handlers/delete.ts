@@ -8,7 +8,7 @@ export default function deleteHandler(request: Request, db: any) {
   if (!item) throw new ServerError(404);
 
   if (request.sideEffects?.delete) {
-    request.sideEffects.delete(item, db);
+    request.sideEffects.delete(item, db, request);
   }
 
   db[request.model].destroy(item.id);

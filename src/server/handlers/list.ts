@@ -102,7 +102,7 @@ export default function indexHandler(
   });
 
   if (request.sideEffects?.index) {
-    const result = request.sideEffects.index(items, db);
+    const result = request.sideEffects.index(items, db, request);
     if (result) {
       items = result;
     }

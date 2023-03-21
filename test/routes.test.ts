@@ -7,8 +7,15 @@ import FetchSingle from '../src/FetchSingle.vue';
 
 const app = createApp({});
 const vroom = createVroom({
-  models: {},
+  models: {
+    user: defineModel({
+      schema: {
+        name: { type: String },
+      },
+    }),
+  },
   server: { enable: true },
+  identityModel: () => 'user',
 });
 
 app.use(createPinia());
@@ -24,7 +31,7 @@ const mockFetch = vi.fn((...args) => {
         method: config.method,
         url,
         body: config.body,
-        headers: {},
+        headers: config.headers || {},
       },
       ''
     )
@@ -107,5 +114,17 @@ describe('Custom routes', async () => {
 
     res = await vroom.api.delete('/custom-route/42');
     expect(res).toStrictEqual('42');
+  });
+
+  it('Gets identity', async () => {
+    vroom.db.user.createMany({ name: 'Alice' }, { name: 'Bob' });
+    vroom.api.headers['authorization'] = 'Bearer 2';
+
+    vroom.server?.get('/me', (request) => {
+      return { name: request.identity?.name };
+    });
+
+    const res = await vroom.api.get('/me');
+    expect(res).toStrictEqual({ name: 'Bob' });
   });
 });
