@@ -1,1 +1,0 @@
-import{_ as s,o as a,c as n,a as l}from"./app.dfdaa207.js";const d=JSON.parse('{"title":"Sorting lists","description":"","frontmatter":{},"headers":[],"relativePath":"guide/fetching/sorting.md"}'),o={name:"guide/fetching/sorting.md"},p=l("",4),t=[p];function e(c,r,D,F,y,i){return a(),n("div",null,t)}const A=s(o,[["render",e]]);export{d as __pageData,A as default};
