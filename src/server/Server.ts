@@ -26,8 +26,8 @@ type RawRequest = {
 };
 
 type RouteHandler = (request: Request, db: any, server?: any) => void;
-type CustomRouteHandler<Db> = (
-  request: SimpleRequest,
+type CustomRouteHandler<Db, IdentityModel> = (
+  request: SimpleRequest<IdentityModel>,
   db: Exclude<Db, null>
 ) => void;
 
@@ -60,7 +60,7 @@ type SideEffect<Db, IdentityModel> = {
       // @ts-expect-error
       items: Db[K]['items'][0][],
       db: Db,
-      identity: IdentityModel | undefined
+      request: SimpleRequest<IdentityModel>
       // @ts-expect-error
     ) => Db[K]['items'][0][] | void;
 
@@ -68,7 +68,7 @@ type SideEffect<Db, IdentityModel> = {
       // @ts-expect-error
       item: Db[K]['items'][0],
       db: Db,
-      identity: IdentityModel | undefined
+      request: SimpleRequest<IdentityModel>
       // @ts-expect-error
     ) => Db[K]['items'][0] | void;
 
@@ -76,33 +76,32 @@ type SideEffect<Db, IdentityModel> = {
       // @ts-expect-error
       item: Db[K]['items'][0],
       db: Db,
-      identity: IdentityModel | undefined
+      request: SimpleRequest<IdentityModel>
       // @ts-expect-error
     ) => Db[K]['items'][0] | void;
     update?: (
       // @ts-expect-error
       item: Db[K]['items'][0],
       db: Db,
-      // @ts-expect-error
-      patchData: Partial<Db[K]['items'][0]>,
-      identity: IdentityModel | undefined
+      request: SimpleRequest<IdentityModel>
       // @ts-expect-error
     ) => Db[K]['items'][0] | void;
     delete?: (
       // @ts-expect-error
       item: Db[K]['items'][0],
       db: Db,
-      identity: IdentityModel | undefined
+      request: SimpleRequest<IdentityModel>
     ) => void;
   };
 };
 
-type SimpleRequest = {
+type SimpleRequest<IdentityModel> = {
   json: object;
   form: object;
   query: object;
   headers: object;
   params: { [key: string]: string };
+  identity?: IdentityModel;
 };
 
 export type Request = {
@@ -306,7 +305,7 @@ export default class Server<DbType, IdentityModel> {
   protected addCustomRoute(
     method: RouteMethod,
     path: string,
-    handler: CustomRouteHandler<DbType>
+    handler: CustomRouteHandler<DbType, IdentityModel>
   ) {
     this.customRoutes.push({ method, path, handler, model: '', settings: {} });
   }
@@ -314,48 +313,69 @@ export default class Server<DbType, IdentityModel> {
   protected override(
     method: RouteMethod,
     path: string,
-    handler: CustomRouteHandler<DbType>
+    handler: CustomRouteHandler<DbType, IdentityModel>
   ) {
     this.overrides.push({ method, path, handler, model: '', settings: {} });
   }
 
   /** Add a custom GET route */
-  public get(path: string, handler: CustomRouteHandler<DbType>) {
+  public get(path: string, handler: CustomRouteHandler<DbType, IdentityModel>) {
     this.addCustomRoute('GET', path, handler);
   }
 
   /** Add a custom PATCH route */
-  public patch(path: string, handler: CustomRouteHandler<DbType>) {
+  public patch(
+    path: string,
+    handler: CustomRouteHandler<DbType, IdentityModel>
+  ) {
     this.addCustomRoute('PATCH', path, handler);
   }
 
   /** Add a custom POST route */
-  public post(path: string, handler: CustomRouteHandler<DbType>) {
+  public post(
+    path: string,
+    handler: CustomRouteHandler<DbType, IdentityModel>
+  ) {
     this.addCustomRoute('POST', path, handler);
   }
 
   /** Add a custom DELETE route */
-  public delete(path: string, handler: CustomRouteHandler<DbType>) {
+  public delete(
+    path: string,
+    handler: CustomRouteHandler<DbType, IdentityModel>
+  ) {
     this.addCustomRoute('DELETE', path, handler);
   }
 
   /** Add a temporary GET route (will be removed if server.reset is called) */
-  public overrideGet(path: string, handler: CustomRouteHandler<DbType>) {
+  public overrideGet(
+    path: string,
+    handler: CustomRouteHandler<DbType, IdentityModel>
+  ) {
     this.override('GET', path, handler);
   }
 
   /** Add a temporary PATCH route (will be removed if server.reset is called) */
-  public overridePatch(path: string, handler: CustomRouteHandler<DbType>) {
+  public overridePatch(
+    path: string,
+    handler: CustomRouteHandler<DbType, IdentityModel>
+  ) {
     this.override('PATCH', path, handler);
   }
 
   /** Add a temporary POST route (will be removed if server.reset is called) */
-  public overridePost(path: string, handler: CustomRouteHandler<DbType>) {
+  public overridePost(
+    path: string,
+    handler: CustomRouteHandler<DbType, IdentityModel>
+  ) {
     this.override('POST', path, handler);
   }
 
   /** Add a temporary DELETE route (will be removed if server.reset is called) */
-  public overrideDelete(path: string, handler: CustomRouteHandler<DbType>) {
+  public overrideDelete(
+    path: string,
+    handler: CustomRouteHandler<DbType, IdentityModel>
+  ) {
     this.override('DELETE', path, handler);
   }
 

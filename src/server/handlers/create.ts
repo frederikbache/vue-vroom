@@ -14,7 +14,7 @@ export default function createHandler(request: Request, db: any) {
   });
 
   if (request.sideEffects?.create) {
-    const result = request.sideEffects.create(newItem, db);
+    const result = request.sideEffects.create(newItem, db, request);
     if (result) {
       return result;
     }

@@ -20,12 +20,7 @@ export default function updateHandler(request: Request, db: any) {
   });
 
   if (request.sideEffects?.update) {
-    const result = request.sideEffects.update(
-      updatedItem,
-      db,
-      request.json,
-      request.identity
-    );
+    const result = request.sideEffects.update(updatedItem, db, request);
     if (result) {
       return result;
     }
