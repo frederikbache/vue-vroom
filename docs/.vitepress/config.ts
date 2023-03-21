@@ -43,6 +43,7 @@ export default {
             { text: 'Mocking custom filters', link: '/guide/server/filters' },
             { text: 'Mocking side effects', link: '/guide/server/sideeffects' },
             { text: 'Custom routes', link: '/guide/server/routes' },
+            { text: 'Mocking identity', link: '/guide/server/identity' },
           ],
         },
         {
