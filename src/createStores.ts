@@ -235,6 +235,10 @@ function createStore(
           this.items = this.items.filter((item: any) => item.id !== id);
         });
       },
+      localDelete(id: ID) {
+        console.log('local delete', id);
+        this.items = this.items.filter((item: any) => item.id !== id);
+      },
       bulkDelete(ids: ID[]) {
         return api
           .delete(endpoint + '/bulk', ids.map((id) => ({ id })) as any)

@@ -1,5 +1,6 @@
 import type { Settings, FieldTypes, IdType } from './types';
 import createDb, { VroomDb } from './server/createDb';
+import socketConnection from './server/Mocket';
 import createServer from './server/createServer';
 import createStores from './createStores';
 import createCache from './createCache';
@@ -8,6 +9,7 @@ import FetchList from './FetchList.vue';
 import FetchSingle from './FetchSingle.vue';
 import FetchSingleton from './FetchSingleton.vue';
 import api from './api';
+import Sockets from './sockets';
 
 export default function createVroom<Options extends Settings & { models: any }>(
   options: Options
@@ -30,12 +32,32 @@ export default function createVroom<Options extends Settings & { models: any }>(
   const server = __DEV__
     ? createServer<typeof db, IdentityModel>(settings, models, db)
     : null;
+
+  const socket = new Sockets<ModelTypes>(settings.ws);
+
+  // const socket = __DEV__ ? socketConnection : new WebSocket(settings.ws);
   const stores = createStores<ModelTypes, Options['models']>(
     models,
     settings.baseURL,
     namingWithDefault
   );
+
   const cache = createCache(stores);
+
+  /* socket.addEventListener('message', (event: any) => {
+    if (event.type === 'db:delete') {
+      stores[event.model]().localDelete(event.id);
+      console.log('Delete something');
+    }
+
+    if (event.type === 'db:update') {
+      stores[event.model]().add([event.data]);
+    }
+
+    if (event.type === 'db:create') {
+      stores[event.model]().add([event.data]);
+    }
+  }); */
 
   return {
     api,
@@ -44,11 +66,13 @@ export default function createVroom<Options extends Settings & { models: any }>(
     server,
     stores,
     cache,
+    socket,
     types: {} as ModelTypes,
     install(app: any) {
       app.provide('stores', stores);
       app.provide('models', models);
       app.provide('cache', cache);
+      app.provide('socket', socket);
       app.provide('vroomTypes', {} as ModelTypes);
       app.component('FetchList', FetchList);
       app.component('FetchSingle', FetchSingle);

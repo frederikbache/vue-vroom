@@ -517,6 +517,8 @@ export default class Server<DbType, IdentityModel> {
     // @ts-expect-error
     window.fetch = async (...args) => {
       const [path, config] = args;
+      const delay = this.settings.delay || 150;
+      await new Promise((r) => setTimeout(r, delay));
 
       const customResponse = this.parseRequest(
         {
@@ -529,8 +531,6 @@ export default class Server<DbType, IdentityModel> {
       );
 
       if (customResponse !== null) {
-        const delay = this.settings.delay || 150;
-        await new Promise((r) => setTimeout(r, delay));
         this.logEvent(
           '🛬 Response',
           path.toString().replace(this.baseURL, ''),
