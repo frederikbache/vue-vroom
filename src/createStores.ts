@@ -251,6 +251,12 @@ function createStore(
       garbageCollect(ids: ID[]) {
         this.items = this.items.filter((item: any) => !ids.includes(item.id));
       },
+      sync(itemOrItems: any[] | any) {
+        const asArray = Array.isArray(itemOrItems)
+          ? itemOrItems
+          : [itemOrItems];
+        this.add(asArray);
+      },
     },
   });
 }
@@ -326,6 +332,7 @@ export default function createStores<Type, ModelInfo>(
             delete: (id: Type[K]['id']) => Promise<void>;
             // @ts-expect-error
             bulkDelete: (ids: Type[K]['id'][]) => Promise<void>;
+            sync: (itemOrItems: Partial<Type[K]> | Partial<Type[K]>[]) => void;
           }
         >;
   };

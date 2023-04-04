@@ -49,7 +49,19 @@ const slots = useSlots();
 
 const socketId = ref('#' + Math.random());
 
-socketId.value = socket.subscribeToModel(props.model, props.filter, (event) => {
+/* const sub = socket.subscribeToModel(props.model, props.filter);
+sub.on('db:create', (data) => {
+  store.add([data]);
+  pushId(data.id);
+});
+sub.on('db:update', (data) => {
+  store.add([data]);
+});
+sub.on('db:delete', (data) => {
+  store.localDelete(data.id);
+}); */
+
+/* socketId.value = socket.subscribeToModel(props.model, props.filter, (event) => {
   if (event.type === 'db:create') {
     store.add([event.data]);
     pushId(event.data.id);
@@ -59,7 +71,7 @@ socketId.value = socket.subscribeToModel(props.model, props.filter, (event) => {
     store.localDelete(event.data.id);
   }
   console.log('Subscription gave event', event);
-});
+}); */
 /* if (socket.readyState === 1) {
   socket.send(
     JSON.stringify({
@@ -211,7 +223,7 @@ onUnmounted(() => {
     cache.unsubscribe(model, includeIds.value[model]);
   });
 
-  socket.unsubscribe(socketId.value);
+  // sub.unsubscribe();
 });
 
 emit('ready', {
