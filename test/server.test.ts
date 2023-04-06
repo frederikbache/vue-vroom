@@ -116,23 +116,23 @@ describe('CRUD Actions', () => {
     vroom.server?.reset();
   });
 
-  it('Can create an item', () => {
-    const response = post('/authors', {
+  it('Can create an item', async () => {
+    const response = await vroom.api.post('/authors', {
       name: 'J.R.R. Tolkien',
     });
 
-    expect(response?.json().id).toBe('1');
-    expect(response?.json().name).toBe('J.R.R. Tolkien');
+    expect(response.id).toBe('1');
+    expect(response.name).toBe('J.R.R. Tolkien');
   });
 
-  it('Can get a list of items', () => {
+  it('Can get a list of items', async () => {
     vroom.db.book.createMany(
       { title: 'The Hobbit' },
       { title: 'The Lord of the Rings', isFavourite: true }
     );
-    const response = get('/books');
+    const response = await vroom.api.get('/books');
 
-    expect(response?.json().data).toStrictEqual([
+    expect(response.data).toStrictEqual([
       { id: '1', title: 'The Hobbit', authorId: null, isFavourite: false },
       {
         id: '2',

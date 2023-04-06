@@ -7,7 +7,9 @@ import setupDevtools from './devtools';
 import FetchList from './FetchList.vue';
 import FetchSingle from './FetchSingle.vue';
 import FetchSingleton from './FetchSingleton.vue';
-import api from './api';
+import createApi from './api';
+import createListComponent from './components/createListComponent';
+import createUseList from './components/createUseList';
 
 export default function createVroom<Options extends Settings & { models: any }>(
   options: Options
@@ -30,11 +32,15 @@ export default function createVroom<Options extends Settings & { models: any }>(
   const server = __DEV__
     ? createServer<typeof db, IdentityModel>(settings, models, db)
     : null;
+  const api = createApi(server);
+
   const stores = createStores<ModelTypes, Options['models']>(
     models,
     settings.baseURL,
-    namingWithDefault
+    namingWithDefault,
+    api
   );
+
   const cache = createCache(stores);
 
   return {
@@ -45,6 +51,12 @@ export default function createVroom<Options extends Settings & { models: any }>(
     stores,
     cache,
     types: {} as ModelTypes,
+    VroomList: createListComponent<ModelTypes>(stores),
+    useList: createUseList<ModelTypes, IdType<Options>['id']>(
+      models,
+      stores,
+      cache
+    ),
     install(app: any) {
       app.provide('stores', stores);
       app.provide('models', models);

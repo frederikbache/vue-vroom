@@ -14,7 +14,7 @@ type ListQuery = {
 export default function indexHandler(
   request: Request,
   db: any,
-  server: Server<any>
+  server: Server<any, any>
 ) {
   const { page, limit, cursor, sort, include, ...filters } =
     request.query as ListQuery;

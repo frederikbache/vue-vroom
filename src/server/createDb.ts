@@ -17,9 +17,8 @@ type Schema = {
   [k: string]: { type: () => any; optional?: boolean };
 };
 
-let db = {} as any;
-
 export class Collection<Type extends HasId> {
+  db: any;
   model: string;
   schema: Schema;
   items: Type[];
@@ -40,8 +39,10 @@ export class Collection<Type extends HasId> {
     hasMany: Relation,
     inverse: any,
     idsAreNumbers: boolean,
-    idFactory: any
+    idFactory: any,
+    db: any
   ) {
+    this.db = db;
     this.model = model;
     this.schema = schema;
     this.items = [];
@@ -104,7 +105,7 @@ export class Collection<Type extends HasId> {
       if (inverse === null) {
         return;
       }
-      const collection = db[rel.model] as Collection<any>;
+      const collection = this.db[rel.model] as Collection<any>;
       collection.removeRelation(this.model, rel.id, rel.newId, inverse);
     });
 
@@ -113,7 +114,7 @@ export class Collection<Type extends HasId> {
       if (inverse === null) {
         return;
       }
-      const collection = db[rel.model] as Collection<any>;
+      const collection = this.db[rel.model] as Collection<any>;
       collection.pushRelation(this.model, rel.id, rel.newId, inverse);
     });
   }
@@ -264,14 +265,14 @@ export class Collection<Type extends HasId> {
       // @ts-expect-error
       if (!this.find(id)[field]) return [];
       // @ts-expect-error
-      return [db[model].find(this.find(id)[field])];
+      return [this.db[model].find(this.find(id)[field])];
     }
     if (key in this.hasMany) {
       const model = this.hasMany[key]();
       const field = key + 'Ids';
       // @ts-expect-error
       return this.find(id)[field].map((relId: ID) => {
-        return db[model].find(relId);
+        return this.db[model].find(relId);
       });
     }
   }
@@ -444,6 +445,8 @@ export default function createDb<ModelTypes>(options: any) {
   const { models, ...settings } = options;
   const idsAreNumbers = settings.idsAreNumbers || false;
 
+  let db = {} as any;
+
   // @ts-expect-error
   if (window.cypressVroom) {
     // @ts-expect-error
@@ -459,7 +462,8 @@ export default function createDb<ModelTypes>(options: any) {
       (value as any).hasMany,
       (value as any).inverse,
       idsAreNumbers,
-      settings.idFactory
+      settings.idFactory,
+      db
     );
   });
 
