@@ -2,7 +2,7 @@ import ServerError from './ServerError';
 import { FetchRequestOptions } from './types';
 
 type ApiParams = { [key: string]: number | string };
-type ApiBody = { [key: string]: unknown } | FormData;
+type ApiBody = { [key: string]: unknown } | FormData | Array<any>;
 
 type ApiRequest = {
   params?: ApiParams;

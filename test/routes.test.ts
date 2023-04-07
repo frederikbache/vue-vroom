@@ -14,32 +14,12 @@ const vroom = createVroom({
       },
     }),
   },
-  server: { enable: true },
+  server: { enable: true, delay: 0 },
   identityModel: () => 'user',
 });
 
 app.use(createPinia());
 app.use(vroom);
-
-const mockFetch = vi.fn((...args) => {
-  const [url, config] = args;
-
-  return Promise.resolve(
-    // @ts-expect-error
-    vroom.server.parseRequest(
-      {
-        method: config.method,
-        url,
-        body: config.body,
-        headers: config.headers || {},
-      },
-      ''
-    )
-  );
-});
-// @ts-expect-error;
-global.fetch = mockFetch;
-const spy = vi.spyOn(global, 'fetch');
 
 describe('Custom routes', async () => {
   it('Add custom route', async () => {

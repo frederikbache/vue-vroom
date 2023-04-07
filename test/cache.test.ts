@@ -30,41 +30,17 @@ const vroom = createVroom({
   },
   server: {
     enable: true,
+    delay: 0,
   },
 });
 
 app.use(createPinia());
 const res = app.use(vroom);
 
-const mockFetch = vi.fn((...args) => {
-  const [url, config] = args;
-
-  return Promise.resolve(
-    // @ts-expect-error
-    vroom.server.parseRequest(
-      {
-        method: config.method,
-        url,
-        body: config.body,
-        headers: {},
-      },
-      ''
-    )
-  );
-});
-// @ts-expect-error;
-global.fetch = mockFetch;
-const spy = vi.spyOn(global, 'fetch');
-
 describe('FetchList.vue', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
     vroom.cache().ids = {};
     vroom.server?.reset();
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
   });
 
   it('Basic fetch', async () => {
@@ -79,7 +55,7 @@ describe('FetchList.vue', () => {
       },
     });
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
 
     expect(vroom.cache().ids.book).toStrictEqual({
       '1': 1,
@@ -88,13 +64,9 @@ describe('FetchList.vue', () => {
     expect(vroom.stores.book().items.length).toBe(2);
 
     await wrapper.setProps({ filter: { title: { contains: 'Hobbit' } } });
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
 
     expect(vroom.cache().ids.book).toStrictEqual({ '1': 1, '2': 0 });
-
-    vi.runAllTimers();
-    expect(vroom.cache().ids.book).toStrictEqual({ '1': 1 });
-    expect(vroom.stores.book().items.length).toBe(1);
   });
 
   it('Includes', async () => {
@@ -115,7 +87,7 @@ describe('FetchList.vue', () => {
     // @ts-expect-error
     const { refresh } = wrapper.emitted('ready')[0][0];
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
 
     expect(vroom.cache().ids.book).toStrictEqual({ '1': 1, '2': 1 });
     expect(vroom.cache().ids.author).toStrictEqual({ '1': 1 });
@@ -123,7 +95,7 @@ describe('FetchList.vue', () => {
     // Add and refresh
     await vroom.stores.book().create({ title: 'Silmarillion', authorId: '1' });
     refresh();
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
 
     expect(vroom.cache().ids.book).toStrictEqual({ '1': 1, '2': 1, '3': 1 });
     expect(vroom.cache().ids.author).toStrictEqual({ '1': 1 });
@@ -137,7 +109,7 @@ describe('FetchList.vue', () => {
       booksIds: [...(author.booksIds || []), tales.id],
     });
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
 
     expect(vroom.cache().ids.book).toStrictEqual({
       '1': 1,

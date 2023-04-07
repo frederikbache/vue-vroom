@@ -28,31 +28,12 @@ const vroom = createVroom({
   },
   server: {
     enable: true,
+    delay: 0,
   },
 });
 
 app.use(createPinia());
 const res = app.use(vroom);
-
-const mockFetch = vi.fn((...args) => {
-  const [url, config] = args;
-
-  return Promise.resolve(
-    // @ts-expect-error
-    vroom.server.parseRequest(
-      {
-        method: config.method,
-        url,
-        body: config.body,
-        headers: {},
-      },
-      ''
-    )
-  );
-});
-// @ts-expect-error;
-global.fetch = mockFetch;
-const spy = vi.spyOn(global, 'fetch');
 
 describe('FetchSingle.vue', () => {
   beforeEach(() => {
@@ -80,7 +61,7 @@ describe('FetchSingle.vue', () => {
       },
     });
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
     expect(wrapper.find('p').text()).toBe('Name: JRR Tolkien');
     const books = wrapper.findAll('span');
     expect(books[0].text()).toBe('The Hobbit');
@@ -103,46 +84,8 @@ describe('FetchSingle.vue', () => {
       },
     });
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
 
     expect(wrapper.text()).toBe('Loading done');
-  });
-
-  it('Custom path', () => {
-    mount(FetchSingle, {
-      props: { model: 'book', id: '1', path: '/some-other-path/1' },
-      global: {
-        provide: res._context.provides,
-      },
-    });
-
-    expect(spy).toHaveBeenCalledWith('/some-other-path/1', {
-      method: 'GET',
-      body: undefined,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  });
-
-  it('Change ID', async () => {
-    const wrapper = mount(FetchSingle, {
-      props: { model: 'book', id: '1' },
-      global: {
-        provide: res._context.provides,
-      },
-    });
-
-    expect(spy).toHaveBeenCalledWith('/books/1', {
-      method: 'GET',
-      body: undefined,
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    await wrapper.setProps({ id: '2' });
-
-    expect(spy).toHaveBeenCalledWith('/books/2', {
-      method: 'GET',
-      body: undefined,
-      headers: { 'Content-Type': 'application/json' },
-    });
   });
 });

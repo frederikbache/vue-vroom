@@ -7,6 +7,7 @@ import {
   type ComputedRef,
 } from 'vue';
 import useFetchState from '../useFetchState';
+import unwrap from './unwrap';
 
 type R<T> = T | Ref<T | undefined> | ComputedRef<T | undefined>;
 
@@ -38,22 +39,6 @@ type OptionsType<Models, Model extends keyof Models, IdType> = {
   path?: string;
   loadOnUpdate?: boolean;
 };
-
-function unwrap(item: any): any {
-  if (Array.isArray(item)) {
-    return item.map(unwrap);
-  } else if (typeof item === 'object') {
-    if (!item) return item;
-    if ('value' in item) return unwrap(item.value);
-    const unwrappedObject = {} as any;
-    Object.entries(item).forEach(([key, val]) => {
-      unwrappedObject[key] = unwrap(val);
-    });
-    return unwrappedObject;
-  }
-
-  return item;
-}
 
 export default function createUseList<Models, IdType>(
   models: any,

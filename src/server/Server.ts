@@ -531,7 +531,12 @@ export default class Server<DbType, IdentityModel> {
       this.baseURL
     );
 
-    await new Promise((r) => setTimeout(r, this.settings.delay || 150));
+    await new Promise((r) =>
+      setTimeout(
+        r,
+        this.settings.delay === undefined ? 150 : this.settings.delay
+      )
+    );
 
     this.logEvent(
       '🛬 Response',

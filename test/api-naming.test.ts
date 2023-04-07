@@ -30,6 +30,7 @@ const vroom = createVroom({
   },
   server: {
     enable: true,
+    delay: 0,
   },
   naming: {
     dataSingle: 'item',
@@ -88,7 +89,7 @@ describe('FetchList.vue', () => {
       },
     });
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
 
     const book = bookList.findAll('p');
     expect(book[0].text()).toBe('1 - The Hobbit - JRR Tolkien');

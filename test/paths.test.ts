@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createVroom, defineModel } from '.';
-import { useServerRequest } from './useServerRequest';
 
 describe('Generates paths', () => {
-  it('Autogenerates from model name', () => {
+  it('Autogenerates from model name', async () => {
     const vroom = createVroom({
       models: {
         book: defineModel({
@@ -12,14 +11,14 @@ describe('Generates paths', () => {
       },
       server: {
         enable: true,
+        delay: 0,
       },
     });
-    const request = useServerRequest(vroom);
-    const response = request.post('/books', { title: 'ABC' });
-    expect(response.json().title).toBe('ABC');
+    const response = await vroom.api.post('/books', { title: 'ABC' });
+    expect(response.title).toBe('ABC');
   });
 
-  it('Uses plural', () => {
+  it('Uses plural', async () => {
     const vroom = createVroom({
       models: {
         category: defineModel({
@@ -29,14 +28,14 @@ describe('Generates paths', () => {
       },
       server: {
         enable: true,
+        delay: 0,
       },
     });
-    const request = useServerRequest(vroom);
-    const response = request.post('/categories', { title: 'ABC' });
-    expect(response.json().title).toBe('ABC');
+    const response = await vroom.api.post('/categories', { title: 'ABC' });
+    expect(response.title).toBe('ABC');
   });
 
-  it('Uses plural', () => {
+  it('Uses plural', async () => {
     const vroom = createVroom({
       models: {
         category: defineModel({
@@ -47,10 +46,12 @@ describe('Generates paths', () => {
       },
       server: {
         enable: true,
+        delay: 0,
       },
     });
-    const request = useServerRequest(vroom);
-    const response = request.post('/longer/path/categories', { title: 'ABC' });
-    expect(response.json().title).toBe('ABC');
+    const response = await vroom.api.post('/longer/path/categories', {
+      title: 'ABC',
+    });
+    expect(response.title).toBe('ABC');
   });
 });

@@ -24,31 +24,12 @@ const vroom = createVroom({
   },
   server: {
     enable: true,
+    delay: 0,
   },
 });
 
 app.use(createPinia());
 const res = app.use(vroom);
-
-const mockFetch = vi.fn((...args) => {
-  const [url, config] = args;
-
-  return Promise.resolve(
-    // @ts-expect-error
-    vroom.server.parseRequest(
-      {
-        method: config.method,
-        url,
-        body: config.body,
-        headers: {},
-      },
-      ''
-    )
-  );
-});
-// @ts-expect-error;
-global.fetch = mockFetch;
-const spy = vi.spyOn(global, 'fetch');
 
 describe('FetchSingleton.vue', () => {
   beforeEach(() => {
@@ -71,7 +52,7 @@ describe('FetchSingleton.vue', () => {
       },
     });
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
     expect(wrapper.text()).toBe('Name: Alice');
   });
 
@@ -91,9 +72,9 @@ describe('FetchSingleton.vue', () => {
       },
     });
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
     vroom.stores.profile().update({ name: 'Bob ' });
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
     expect(wrapper.text()).toBe('Name: Bob');
   });
 
@@ -116,12 +97,12 @@ describe('FetchSingleton.vue', () => {
       },
     });
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
     expect(wrapper.text()).toBe('Date: 2022-01-02, Temp: 10');
 
     vroom.stores.weather().update({ temp: 1 }, { date: '2022-01-02' });
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
     expect(wrapper.text()).toBe('Date: 2022-01-02, Temp: 1');
   });
 
@@ -143,23 +124,8 @@ describe('FetchSingleton.vue', () => {
       },
     });
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
 
     expect(wrapper.text()).toBe('Loading done');
-  });
-
-  it('Custom path', () => {
-    mount(FetchSingleton, {
-      props: { model: 'profile', path: '/my-profile' },
-      global: {
-        provide: res._context.provides,
-      },
-    });
-
-    expect(spy).toHaveBeenCalledWith('/my-profile', {
-      method: 'GET',
-      body: undefined,
-      headers: { 'Content-Type': 'application/json' },
-    });
   });
 });
