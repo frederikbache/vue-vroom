@@ -28,48 +28,25 @@ const vroom = createVroom({
   },
   server: {
     enable: true,
+    delay: 0,
   },
 });
 
 app.use(createPinia());
-const res = app.use(vroom);
-
-let intercept = (response: any) => response;
-
-const mockFetch = vi.fn((...args) => {
-  const [url, config] = args;
-
-  return Promise.resolve(
-    intercept(
-      // @ts-expect-error
-      vroom.server.parseRequest(
-        {
-          method: config.method,
-          url,
-          body: config.body,
-          headers: {},
-        },
-        ''
-      )
-    )
-  );
-});
-global.fetch = mockFetch;
-const spy = vi.spyOn(global, 'fetch');
+app.use(vroom);
 
 describe('Response Validation', () => {
   beforeEach(() => {
     vroom.server?.reset();
-    intercept = (response: any) => response;
   });
 
   test('Envelope missing', async () => {
-    intercept = () => {
-      return { ok: true, body: [], json: () => [] };
-    };
+    vroom.server?.overrideGet('/authors', (request, db) => {
+      return db.author.all();
+    });
     let errors = [] as any[];
 
-    vroom.stores
+    await vroom.stores
       .author()
       // @ts-expect-error
       .$list({}, {}, [], [])
@@ -77,7 +54,6 @@ describe('Response Validation', () => {
         errors = e.errors;
       });
 
-    await flushPromises();
     expect(errors).toHaveLength(1);
     expect(errors[0].msg).toBe('Response did not include "data" object');
   });
@@ -88,15 +64,13 @@ describe('Response Validation', () => {
 
     let errors = [] as any[];
 
-    vroom.stores
+    await vroom.stores
       .author()
       // @ts-expect-error
       .$list({}, {}, [], [])
       .catch((e) => {
         errors = e.errors;
       });
-
-    await flushPromises();
 
     expect(errors).toHaveLength(1);
     expect(errors[0]).toStrictEqual({

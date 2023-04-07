@@ -2,7 +2,6 @@ import { createPinia } from 'pinia';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createApp } from 'vue';
 import { createVroom, defineModel } from '.';
-import { useServerRequest } from './useServerRequest';
 
 const app = createApp({});
 
@@ -15,7 +14,7 @@ const vroom = createVroom({
     }),
   },
   server: {
-    enable: true,
+    enable: false,
   },
 });
 

@@ -16,6 +16,7 @@ import deleteHandler from './handlers/delete';
 import bulkCreateHandler from './handlers/bulk-create';
 import bulkUpdateHandler from './handlers/bulk-update';
 import bulkDeleteHandler from './handlers/bulk-delete';
+import ServerError from '../ServerError';
 type RouteMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT';
 
 type RawRequest = {
@@ -104,6 +105,14 @@ type SimpleRequest<IdentityModel> = {
   identity?: IdentityModel;
 };
 
+type ApiParams = { [key: string]: number | string };
+type ApiBody = { [key: string]: unknown } | FormData;
+
+type ApiRequest = {
+  params?: ApiParams;
+  body?: ApiBody;
+};
+
 export type Request = {
   json: object;
   form: object;
@@ -158,7 +167,7 @@ export default class Server<DbType, IdentityModel> {
       : null;
     this.identity = null;
     this.generateRoutes(models);
-    this.setupInterceptor(this.baseURL);
+    // this.setupInterceptor(this.baseURL);
     this.filters = {} as Filter<DbType>;
     this.sideEffects = {} as SideEffect<DbType, IdentityModel>;
     this.events = [];
@@ -464,7 +473,18 @@ export default class Server<DbType, IdentityModel> {
     }
 
     const { route, params } = this.findMatchingRoute(method, path);
-    if (route) {
+
+    this.logEvent('🛫 ' + method, url.replace(this.baseURL, ''), {
+      params: params,
+      query: query,
+      body: jsonBody,
+      headers,
+    });
+    try {
+      if (!route) {
+        throw new ServerError(404, { type: 'route_not_found', method, path });
+      }
+
       const request = {
         query,
         json: jsonBody,
@@ -479,69 +499,52 @@ export default class Server<DbType, IdentityModel> {
         sideEffects: this.sideEffects ? this.sideEffects[route.model] : {},
         identity: this.identity,
       };
-      try {
-        this.logEvent('🛫 ' + method, url.replace(this.baseURL, ''), {
-          params: request.params,
-          query: request.query,
-          body: request.json,
-          headers,
-        });
-        const response = route.handler(request, this.db, this);
-        return {
-          ok: true,
-          body: response,
-          json() {
-            return response;
-          },
-        };
-      } catch (e) {
-        const error = e as any;
-        if ('status' in error) {
-          this.logEvent('🚨 Server Error', error.status, error.data, 'error');
-          return {
-            ok: false,
-            status: error.status,
-            json() {
-              return error.data;
-            },
-          };
-        }
+
+      return route.handler(request as any, this.db, this);
+    } catch (e) {
+      if (e instanceof ServerError) {
+        this.logEvent(
+          '🚨 ' + e.status.toString(),
+          method + ' ' + url.replace(this.baseURL, ''),
+          e.data,
+          'error'
+        );
       }
+      // Rethrow the error
+      throw e;
     }
-    return null;
   }
 
-  protected setupInterceptor(baseURL: string) {
-    const originalFetch = window.fetch;
+  public async handleRequest(
+    method: RouteMethod,
+    url: string,
+    body: string,
+    headers: { [key: string]: string }
+  ) {
+    const response = this.parseRequest(
+      {
+        method,
+        url,
+        body,
+        headers,
+      },
+      this.baseURL
+    );
 
-    // @ts-expect-error
-    window.fetch = async (...args) => {
-      const [path, config] = args;
+    await new Promise((r) =>
+      setTimeout(
+        r,
+        this.settings.delay === undefined ? 150 : this.settings.delay
+      )
+    );
 
-      const customResponse = this.parseRequest(
-        {
-          method: config ? (config.method as RouteMethod) : 'GET',
-          url: path.toString(),
-          body: config ? config.body?.toString() : '',
-          headers: config?.headers,
-        },
-        baseURL
-      );
+    this.logEvent(
+      '🛬 Response',
+      url.toString().replace(this.baseURL, ''),
+      response
+    );
 
-      if (customResponse !== null) {
-        const delay = this.settings.delay || 150;
-        await new Promise((r) => setTimeout(r, delay));
-        this.logEvent(
-          '🛬 Response',
-          path.toString().replace(this.baseURL, ''),
-          customResponse.json()
-        );
-        return customResponse;
-      }
-
-      const response = await originalFetch(path, config);
-      return response;
-    };
+    return response;
   }
 
   /** Add one or more custom filters */

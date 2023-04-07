@@ -2,7 +2,7 @@ import ServerError from './ServerError';
 import { FetchRequestOptions } from './types';
 
 type ApiParams = { [key: string]: number | string };
-type ApiBody = { [key: string]: unknown } | FormData;
+type ApiBody = { [key: string]: unknown } | FormData | Array<any>;
 
 type ApiRequest = {
   params?: ApiParams;
@@ -16,7 +16,8 @@ function api(
   method: string,
   url: string,
   { params, body }: ApiRequest,
-  extraHeaders = {}
+  extraHeaders = {},
+  server: any
 ) {
   // @ts-expect-error
   const searchString = params ? new URLSearchParams(params).toString() : '';
@@ -30,6 +31,10 @@ function api(
   }
   if (requestHeaders['Content-Type'] === 'application/json' && payload) {
     payload = JSON.stringify(payload);
+  }
+
+  if (server) {
+    return server.handleRequest(method, urlWithSearch, payload, requestHeaders);
   }
 
   return fetch(urlWithSearch, {
@@ -55,19 +60,26 @@ function api(
   });
 }
 
-export default {
-  headers,
-  requestOptions,
-  get(url: string, params?: ApiParams, extraHeaders?: any) {
-    return api('GET', url, { params }, extraHeaders);
-  },
-  post(url: string, body?: ApiBody, params?: ApiParams, extraHeaders?: any) {
-    return api('POST', url, { body, params }, extraHeaders);
-  },
-  patch(url: string, body?: ApiBody, params?: ApiParams, extraHeaders?: any) {
-    return api('PATCH', url, { body, params }, extraHeaders);
-  },
-  delete(url: string, body?: ApiBody, params?: ApiParams, extraHeaders?: any) {
-    return api('DELETE', url, { body, params }, extraHeaders);
-  },
-};
+export default function createApi(server: any) {
+  return {
+    headers,
+    requestOptions,
+    get(url: string, params?: ApiParams, extraHeaders?: any) {
+      return api('GET', url, { params }, extraHeaders, server);
+    },
+    post(url: string, body?: ApiBody, params?: ApiParams, extraHeaders?: any) {
+      return api('POST', url, { body, params }, extraHeaders, server);
+    },
+    patch(url: string, body?: ApiBody, params?: ApiParams, extraHeaders?: any) {
+      return api('PATCH', url, { body, params }, extraHeaders, server);
+    },
+    delete(
+      url: string,
+      body?: ApiBody,
+      params?: ApiParams,
+      extraHeaders?: any
+    ) {
+      return api('DELETE', url, { body, params }, extraHeaders, server);
+    },
+  };
+}
