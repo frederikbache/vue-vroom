@@ -1,6 +1,5 @@
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
-import dts from 'vite-plugin-dts';
 import vue from '@vitejs/plugin-vue';
 import replace from '@rollup/plugin-replace';
 

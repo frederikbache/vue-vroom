@@ -46,7 +46,6 @@
     "prettier": "^2.8.7",
     "typescript": "^5.0.3",
     "vite": "^4.0.0",
-    "vite-plugin-dts": "^2.0.0",
     "vitepress": "^1.0.0-alpha.19",
     "vitest": "^0.29.8",
     "vue-tsc": "^1.2.0"
