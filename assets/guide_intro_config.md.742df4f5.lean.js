@@ -1,1 +1,0 @@
-import{_ as s,o as n,c as a,a as l}from"./app.9abaae4d.js";const A=JSON.parse('{"title":"Config","description":"","frontmatter":{},"headers":[],"relativePath":"guide/intro/config.md"}'),o={name:"guide/intro/config.md"},p=l("",2),e=[p];function t(c,r,D,F,y,i){return n(),a("div",null,e)}const d=s(o,[["render",t]]);export{A as __pageData,d as default};
