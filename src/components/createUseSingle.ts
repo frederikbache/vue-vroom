@@ -74,8 +74,9 @@ export default function createUseSingle<Models, IdType>(
     if (!options.lazy) {
       fetch();
     }
+
+    cacheStore.subscribe(model, [singleId.value]);
     watch(singleId, (newId, oldId) => {
-      console.log('Single id changed', singleId.value);
       cacheStore.subscribe(model, [newId]);
       cacheStore.unsubscribe(model, [oldId]);
       if (!options.lazy) fetch();
@@ -91,6 +92,7 @@ export default function createUseSingle<Models, IdType>(
     }));
 
     const item = computed<ItemType>(() => {
+      // TODO return null if not loaded yet?
       const item = { ...store.single(singleId.value) };
       include.value.forEach((rel: string) => {
         const hasMany = rel in modelSettings.hasMany;
