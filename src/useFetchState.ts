@@ -6,7 +6,7 @@ export default function useFetchState(loadOnUpdate: boolean) {
   const error = ref({} as any);
   const state = ref('none' as 'none' | 'loading' | 'updating' | 'failed');
 
-  //const slots = useSlots();
+  const slots = useSlots();
 
   const isLoading = computed(
     () => state.value === 'loading' && (!hasLoaded.value || loadOnUpdate)
@@ -14,14 +14,13 @@ export default function useFetchState(loadOnUpdate: boolean) {
   const isFailed = computed(() => state.value === 'failed');
 
   function handleError(e: any) {
-    console.log('FAILED!!');
-    /* if (!slots.failed) {
+    if (!slots.failed) {
       if (e.log) {
         e.log('Fetch unhandled:');
       } else {
         console.error('FetchList unhandled failed state: ' + e.message);
       }
-    } */
+    }
     state.value = 'failed';
     error.value = e instanceof ServerError ? e : e.message;
   }
