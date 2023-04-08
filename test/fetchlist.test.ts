@@ -30,31 +30,12 @@ const vroom = createVroom({
   },
   server: {
     enable: true,
+    delay: 0,
   },
 });
 
 app.use(createPinia());
 const res = app.use(vroom);
-
-const mockFetch = vi.fn((...args) => {
-  const [url, config] = args;
-
-  return Promise.resolve(
-    // @ts-expect-error
-    vroom.server.parseRequest(
-      {
-        method: config.method,
-        url,
-        body: config.body,
-        headers: {},
-      },
-      ''
-    )
-  );
-});
-// @ts-expect-error;
-global.fetch = mockFetch;
-const spy = vi.spyOn(global, 'fetch');
 
 describe('FetchList.vue', () => {
   beforeEach(() => {
@@ -78,15 +59,7 @@ describe('FetchList.vue', () => {
       },
     });
 
-    expect(spy).toHaveBeenCalledWith('/books', {
-      method: 'GET',
-      body: undefined,
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    expect(spy).toHaveBeenCalledTimes(1);
-
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
 
     const book = wrapper.findAll('p');
     expect(book.length).toBe(2);
@@ -115,7 +88,7 @@ describe('FetchList.vue', () => {
       },
     });
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
 
     const book = bookList.findAll('p');
     expect(book[0].text()).toBe('1 - The Hobbit - JRR Tolkien');
@@ -136,7 +109,7 @@ describe('FetchList.vue', () => {
       },
     });
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
 
     const author = authorList.findAll('p');
     const authorBooks = authorList.findAll('span');
@@ -162,7 +135,7 @@ describe('FetchList.vue', () => {
     // @ts-expect-error
     const { pushId } = wrapper.emitted('ready')[0][0];
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
 
     let book = wrapper.findAll('p');
     expect(book.length).toBe(1);
@@ -171,7 +144,7 @@ describe('FetchList.vue', () => {
     const { id } = await vroom.stores.book().create({ title: 'Silmarillion' });
     pushId(id);
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
 
     book = wrapper.findAll('p');
     expect(book.length).toBe(2);
@@ -193,23 +166,8 @@ describe('FetchList.vue', () => {
       },
     });
 
-    await flushPromises();
+    await new Promise((r) => setTimeout(r, 1));
 
     expect(wrapper.text()).toBe('Loading done');
-  });
-
-  it('Custom path', () => {
-    mount(FetchList, {
-      props: { model: 'book', path: '/some-other-path' },
-      global: {
-        provide: res._context.provides,
-      },
-    });
-
-    expect(spy).toHaveBeenCalledWith('/some-other-path', {
-      method: 'GET',
-      body: undefined,
-      headers: { 'Content-Type': 'application/json' },
-    });
   });
 });

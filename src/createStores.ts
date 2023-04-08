@@ -1,5 +1,4 @@
 import { defineStore, type StoreDefinition } from 'pinia';
-import api from './api';
 import { ID, ApiNames } from './types';
 import createValidator from './validateResponse';
 
@@ -21,9 +20,6 @@ type StoreSettings = {
     [key: string]: (id: any) => any;
   };
 };
-
-let validator: ReturnType<typeof createValidator>;
-const stores = {} as any;
 
 function parseFilters(filterSettings: any) {
   const filters = {} as any;
@@ -67,7 +63,10 @@ function createSingletonStore(
   name: string,
   baseURL = '',
   settings: StoreSettings,
-  naming: ApiNames
+  naming: ApiNames,
+  api: any,
+  stores: any,
+  validator: any
 ) {
   const endpoint = settings.path
     ? baseURL + settings.path
@@ -85,7 +84,7 @@ function createSingletonStore(
         let params = {
           ...parseFilters(filter),
         };
-        return api.get(overridePath || endpoint, params).then((res) => {
+        return api.get(overridePath || endpoint, params).then((res: any) => {
           if (settings.envelope === false) {
             this.item = res;
             return res;
@@ -98,7 +97,7 @@ function createSingletonStore(
         let params = {
           ...parseFilters(filter),
         };
-        return api.patch(endpoint, patchData, params).then((item) => {
+        return api.patch(endpoint, patchData, params).then((item: any) => {
           this.item = { ...item };
         });
       },
@@ -111,7 +110,10 @@ function createStore(
   modelName: string,
   baseURL = '',
   settings: StoreSettings,
-  naming: ApiNames
+  naming: ApiNames,
+  api: any,
+  stores: any,
+  validator: any
 ) {
   const endpoint = settings.path
     ? baseURL + settings.path
@@ -119,7 +121,7 @@ function createStore(
   const methods = {} as any;
   Object.keys(settings.itemActions).forEach((verb) => {
     methods[verb] = function (id: any) {
-      return api.post(`${endpoint}/${id}/${verb}`).then((item) => {
+      return api.post(`${endpoint}/${id}/${verb}`).then((item: any) => {
         (this as any).add([item]);
       });
     };
@@ -165,9 +167,13 @@ function createStore(
         };
         if (sort.length) params.sort = createSortString(sort);
         if (include.length) params.include = include.join(',');
+        if ('cursor' in params && params.cursor === undefined) {
+          console.log('Deleting emoty nextcursor');
+          delete params.cursor;
+        }
         const url = overridePath || endpoint;
 
-        return api.get(url, params).then((res) => {
+        return api.get(url, params).then((res: any) => {
           if (settings.envelope === false) {
             this.add(res);
             return { items: res };
@@ -189,7 +195,7 @@ function createStore(
         let params = {} as any;
         if (include.length) params.include = include.join(',');
         const url = overridePath || endpoint + '/' + id;
-        return api.get(url, params).then((res) => {
+        return api.get(url, params).then((res: any) => {
           if (settings.envelope === false) {
             this.add([res]);
             return res;
@@ -207,23 +213,23 @@ function createStore(
         });
       },
       create(postData: any) {
-        return api.post(endpoint, postData).then((item) => {
+        return api.post(endpoint, postData).then((item: any) => {
           this.add([item]);
           return item;
         });
       },
       bulkCreate(data: any[]) {
-        return api.post(endpoint + '/bulk', data as any).then((items) => {
+        return api.post(endpoint + '/bulk', data as any).then((items: any) => {
           this.add(items);
         });
       },
       update(id: ID, patchData: any) {
-        return api.patch(endpoint + '/' + id, patchData).then((item) => {
+        return api.patch(endpoint + '/' + id, patchData).then((item: any) => {
           this.add([item]);
         });
       },
       bulkUpdate(data: any[]) {
-        return api.patch(endpoint + '/bulk', data as any).then((items) => {
+        return api.patch(endpoint + '/bulk', data as any).then((items: any) => {
           this.add(items);
         });
       },
@@ -269,25 +275,38 @@ type ItemActions<T, ModelT> = {
 export default function createStores<Type, ModelInfo>(
   models: any,
   baseURL = '',
-  naming: ApiNames
+  naming: ApiNames,
+  api: any
 ) {
+  const stores = {} as any;
+  const validator = createValidator(models, naming);
+
   Object.keys(models).forEach((name) => {
     const storeName = models[name].plural || `${name}s`;
 
     if (models[name].singleton) {
-      stores[name] = createSingletonStore(name, baseURL, models[name], naming);
+      stores[name] = createSingletonStore(
+        name,
+        baseURL,
+        models[name],
+        naming,
+        api,
+        stores,
+        validator
+      );
     } else {
       stores[name] = createStore(
         storeName,
         name,
         baseURL,
         models[name],
-        naming
+        naming,
+        api,
+        stores,
+        validator
       );
     }
   });
-
-  validator = createValidator(models, naming);
 
   return stores as {
     // @ts-expect-error

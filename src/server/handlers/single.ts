@@ -8,7 +8,7 @@ type SingleQuery = {
 export default function singleHandler(
   request: Request,
   db: any,
-  server: Server<any>
+  server: Server<any, any>
 ) {
   const { id } = request.params;
   const { include } = request.query as SingleQuery;

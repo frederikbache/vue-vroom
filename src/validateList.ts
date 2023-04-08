@@ -1,5 +1,3 @@
-import { e } from 'vitest/dist/index-40e0cb97';
-import assert from './assert';
 import { ApiNames } from './types';
 
 class ValidationError extends Error {
