@@ -502,6 +502,7 @@ export default function createDb<ModelTypes>(options: any) {
 
   setTimeout(() => {
     bc.onmessage = function (ev: any) {
+      console.log('Getting a bc message', ev);
       db[ev.data.model].items = ev.data.items;
       db[ev.data.model].lastId = ev.data.lastId;
     };

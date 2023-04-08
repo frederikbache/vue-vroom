@@ -5,6 +5,7 @@ import {
   ref,
   watch,
   type ComputedRef,
+  nextTick,
 } from 'vue';
 import useFetchState from '../useFetchState';
 import unwrap from './unwrap';

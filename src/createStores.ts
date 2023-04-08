@@ -168,7 +168,6 @@ function createStore(
         if (sort.length) params.sort = createSortString(sort);
         if (include.length) params.include = include.join(',');
         if ('cursor' in params && params.cursor === undefined) {
-          console.log('Deleting emoty nextcursor');
           delete params.cursor;
         }
         const url = overridePath || endpoint;

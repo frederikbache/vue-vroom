@@ -4,12 +4,12 @@ type SubscriptionSettings = {
   model: string;
   ids: Array<string | number>;
   onUnsubscribe: () => void;
-  onEmit: (event: string, data: any) => void;
+  onEmit?: (event: string, data: any) => void;
 };
 
 class Subscription {
   onUnsubscribe: () => void;
-  onEmit: (event: string, data: any) => void;
+  onEmit?: (event: string, data: any) => void;
   listeners: { [key: string]: Array<(data: any) => void> };
   public model: string;
   public ids: Array<string | number>;
@@ -39,7 +39,9 @@ class Subscription {
   }
 
   public emit(event: string, data: any) {
-    this.onEmit(event, data);
+    if (this.onEmit) {
+      this.onEmit(event, data);
+    }
   }
 
   public unsubscribe() {
@@ -61,8 +63,9 @@ export default class Sockets<Models> {
   constructor(wsUrl = '', connection: Mocket<any, any>) {
     this.connection = connection || new WebSocket(wsUrl);
     this.subscriptions = [];
+    this.pongTimeout = null;
 
-    this.connection.addEventListener('message', (event: Event) => {
+    this.connection.addEventListener('message', (event: any) => {
       console.log('event', event);
       if (event.data === 'pong') {
         if (this.pongTimeout) clearTimeout(this.pongTimeout);
@@ -88,7 +91,7 @@ export default class Sockets<Models> {
     }, 5000);
   }
 
-  handleMessage(msg: EventMessage) {
+  handleMessage(msg: any) {
     // console.log('Handle message', msg, this.subscriptions);
     this.subscriptions
       .filter(
@@ -127,19 +130,19 @@ export default class Sockets<Models> {
     });
 
     const subscription = new Subscription({
-      model,
-      ids,
+      model: model as string,
+      ids: ids as any,
       onUnsubscribe: () => {
         this.unsubscribe(subscriptionId);
       },
-      onEmit: (event, id, data) => {
+      /* onEmit: (event: string, id: any, data: any) => {
         this.send({
           type: event,
           model,
           id,
           data,
         });
-      },
+      }, */
     });
 
     this.subscriptions.push(subscription);
@@ -147,7 +150,7 @@ export default class Sockets<Models> {
   }
 
   unsubscribe(id: string | number) {
-    delete this.subscriptions[id];
+    delete this.subscriptions[id as any];
 
     this.send({
       id: id,

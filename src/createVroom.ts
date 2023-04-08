@@ -45,7 +45,7 @@ export default function createVroom<Options extends Settings & { models: any }>(
 
   const socket = new Sockets<ModelTypes>(
     settings.ws,
-    mocket as any as typeof Mocket
+    mocket as any as Mocket<any, any>
   );
   const api = createApi(server);
 

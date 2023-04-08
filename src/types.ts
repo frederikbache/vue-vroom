@@ -62,6 +62,7 @@ export type FetchRequestOptions = {
 
 export type Settings = {
   baseURL?: string;
+  ws?: string;
   server?: ServerSettings;
   idsAreNumbers?: boolean;
   idFactory?: (i: number) => string;

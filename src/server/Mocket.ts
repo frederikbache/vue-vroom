@@ -50,6 +50,7 @@ export default class Mocket<DbType, IdentityModel> {
       console.log('🔻', data, this.listeners.message?.length);
       this.listeners['message']?.forEach((handler) => {
         handler({
+          // @ts-ignore
           data: JSON.stringify(data),
         });
       });
@@ -94,6 +95,7 @@ export default class Mocket<DbType, IdentityModel> {
       this.subscriptions = this.subscriptions.filter((s) => s.id !== object.id);
       console.log('Subscriptions are now', this.subscriptions);
     } else if (object.auth) {
+      // @ts-ignore
       this.identity = this.db[this.identityModel].find(object.auth);
     } else {
       const handler = this.handlers.find(
