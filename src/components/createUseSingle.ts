@@ -118,7 +118,6 @@ export default function createUseSingle<Models, IdType>(
     // Update cache subscriptions when ids change
 
     watch(includedIds, (newIds, oldIds) => {
-      console.log('Newold', newIds, oldIds);
       Object.keys(newIds).forEach((model) => {
         cacheStore.subscribe(model, newIds[model]);
       });

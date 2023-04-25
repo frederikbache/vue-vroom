@@ -31,8 +31,6 @@ class Subscription {
 
   public handle(msg: any) {
     const handlers = this.listeners[msg.type] || [];
-    // console.log('Subscription handle', type, item, handlers);
-    // console.log('Handle', type, data, handlers, this.listeners);
     handlers.forEach((handler) => {
       handler(msg);
     });
@@ -59,21 +57,21 @@ export default class Sockets<Models> {
   private subscriptions: Subscription[];
   private connection: Mocket<any, any> | WebSocket;
   private pongTimeout: NodeJS.Timeout | null;
+  private messageQueue: string[];
+  private lastId: number;
+  private mock: Mocket<any, any> | null;
+  private wsUrl: string;
 
-  constructor(wsUrl = '', connection: Mocket<any, any>) {
-    this.connection = connection || new WebSocket(wsUrl);
+  constructor(wsUrl = '', mock: Mocket<any, any>) {
+    this.wsUrl = wsUrl;
+    this.mock = mock;
     this.subscriptions = [];
+    this.messageQueue = [];
     this.pongTimeout = null;
+    this.lastId = Math.random();
+    this.connection = mock || new WebSocket(wsUrl);
 
-    this.connection.addEventListener('message', (event: any) => {
-      console.log('event', event);
-      if (event.data === 'pong') {
-        if (this.pongTimeout) clearTimeout(this.pongTimeout);
-      } else {
-        const message = JSON.parse(event.data);
-        this.handleMessage(message as any as EventMessage);
-      }
-    });
+    this.setupListeners();
 
     /* this.pongTimeout = null;
     this.connection.addEventListener('open', () => {
@@ -83,16 +81,21 @@ export default class Sockets<Models> {
     }); */
   }
 
+  reconnect() {
+    console.log('Reconnecting');
+    this.connection = this.mock || new WebSocket(this.wsUrl);
+  }
+
   sendPingPong() {
     this.send('ping');
 
     this.pongTimeout = setTimeout(() => {
       console.log('Did not get pong back');
+      this.reconnect();
     }, 5000);
   }
 
   handleMessage(msg: any) {
-    // console.log('Handle message', msg, this.subscriptions);
     this.subscriptions
       .filter(
         (subscription) =>
@@ -101,28 +104,46 @@ export default class Sockets<Models> {
       .forEach((subscription) => {
         subscription.handle(msg);
       });
-    /* if (msg.subIds) {
-      msg.subIds.forEach((i) => {
-        this.subscriptions[i].handle(msg);
-      });
-    } */
   }
 
-  send(msg: Object | string) {
-    if (this.connection.readyState === 1) {
-      this.connection.send(typeof msg === 'string' ? msg : JSON.stringify(msg));
-    } else {
-      this.connection.addEventListener('open', () => {
-        this.connection.send(
-          typeof msg === 'string' ? msg : JSON.stringify(msg)
-        );
-      });
-      // TODO remove the event listener again?
+  setupListeners() {
+    this.connection.addEventListener('open', () => {
+      this.sendMessages();
+    });
+
+    this.connection.addEventListener('message', (event: any) => {
+      if (event.data === 'pong') {
+        if (this.pongTimeout) clearTimeout(this.pongTimeout);
+      } else {
+        const message = JSON.parse(event.data);
+        this.handleMessage(message as any as EventMessage);
+      }
+    });
+  }
+
+  sendMessages() {
+    while (this.messageQueue.length) {
+      const m = this.messageQueue.shift();
+      this.connection.send(m as string);
     }
   }
 
+  send(msg: Object | string) {
+    const payload = typeof msg === 'string' ? msg : JSON.stringify(msg);
+    this.messageQueue.push(payload);
+    if (this.connection.readyState === 1) {
+      this.sendMessages();
+    }
+  }
+
+  generateId() {
+    const x = Math.sin(this.lastId + 1) * 10000;
+    this.lastId += 1;
+    return (x - Math.floor(x)).toString(36).substring(7);
+  }
+
   public subscribeToModel(model: keyof Models, ids?: any[]) {
-    const subscriptionId = Math.random();
+    const subscriptionId = this.generateId();
     this.send({
       id: subscriptionId,
       subscribe: model,
