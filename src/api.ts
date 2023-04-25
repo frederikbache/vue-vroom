@@ -43,19 +43,19 @@ function api(
     headers: requestHeaders,
     body: payload as any,
   }).then((res) => {
+    const json = res.json();
+    if (json instanceof Promise) {
+      return json
+        .then((data) => data)
+        .catch(() => {
+          // Getting the JSON failed, return empty object
+          return {};
+        });
+    }
     if (res.ok) {
-      const json = res.json();
-      if (json instanceof Promise) {
-        return json
-          .then((data) => data)
-          .catch(() => {
-            // Getting the JSON failed, return empty object
-            return {};
-          });
-      }
       return json;
     } else {
-      throw new ServerError(res.status, res);
+      throw new ServerError(res.status, json);
     }
   });
 }
