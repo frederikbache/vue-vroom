@@ -42,20 +42,18 @@ function api(
     method,
     headers: requestHeaders,
     body: payload as any,
-  }).then((res) => {
-    const json = res.json();
-    if (json instanceof Promise) {
-      return json
-        .then((data) => data)
-        .catch(() => {
-          // Getting the JSON failed, return empty object
-          return {};
-        });
-    }
+  }).then(async (res) => {
+    let returnBody = {};
+    try {
+      // Try and parse the response json
+      returnBody = await res.json();
+    } catch {}
     if (res.ok) {
-      return json;
+      // If okay return the response
+      return returnBody;
     } else {
-      throw new ServerError(res.status, json);
+      // If not, throw an error
+      throw new ServerError(res.status, returnBody);
     }
   });
 }
