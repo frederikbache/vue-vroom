@@ -168,7 +168,6 @@ function createStore(
         if (sort.length) params.sort = createSortString(sort);
         if (include.length) params.include = include.join(',');
         if ('cursor' in params && params.cursor === undefined) {
-          console.log('Deleting emoty nextcursor');
           delete params.cursor;
         }
         const url = overridePath || endpoint;
@@ -241,6 +240,10 @@ function createStore(
           this.items = this.items.filter((item: any) => item.id !== id);
         });
       },
+      localDelete(id: ID) {
+        console.log('local delete', id);
+        this.items = this.items.filter((item: any) => item.id !== id);
+      },
       bulkDelete(ids: ID[]) {
         return api
           .delete(endpoint + '/bulk', ids.map((id) => ({ id })) as any)
@@ -252,6 +255,12 @@ function createStore(
       },
       garbageCollect(ids: ID[]) {
         this.items = this.items.filter((item: any) => !ids.includes(item.id));
+      },
+      sync(itemOrItems: any[] | any) {
+        const asArray = Array.isArray(itemOrItems)
+          ? itemOrItems
+          : [itemOrItems];
+        this.add(asArray);
       },
     },
   });
@@ -341,6 +350,7 @@ export default function createStores<Type, ModelInfo>(
             delete: (id: Type[K]['id']) => Promise<void>;
             // @ts-expect-error
             bulkDelete: (ids: Type[K]['id'][]) => Promise<void>;
+            sync: (itemOrItems: Partial<Type[K]> | Partial<Type[K]>[]) => void;
           }
         >;
   };

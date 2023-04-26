@@ -13,6 +13,8 @@
 import { computed, inject, onUnmounted, ref, useSlots, watch } from 'vue';
 import useFetchState from './useFetchState';
 
+import type Sockets from './sockets';
+
 type SortSettings = {
   field: string;
   dir?: 'ASC' | 'DESC';
@@ -39,10 +41,58 @@ const props = defineProps({
 const emit = defineEmits(['ready', 'loaded', 'update:modelValue']);
 
 const stores = inject('stores') as any;
+const socket = inject('socket') as Sockets<any>;
 const store = stores[props.model]();
 const cache = (inject('cache') as any)();
 const settings = (inject('models') as any)[props.model];
 const slots = useSlots();
+
+const socketId = ref('#' + Math.random());
+
+/* const sub = socket.subscribeToModel(props.model, props.filter);
+sub.on('db:create', (data) => {
+  store.add([data]);
+  pushId(data.id);
+});
+sub.on('db:update', (data) => {
+  store.add([data]);
+});
+sub.on('db:delete', (data) => {
+  store.localDelete(data.id);
+}); */
+
+/* socketId.value = socket.subscribeToModel(props.model, props.filter, (event) => {
+  if (event.type === 'db:create') {
+    store.add([event.data]);
+    pushId(event.data.id);
+  } else if (event.type === 'db:update') {
+    store.add([event.data]);
+  } else if (event.type === 'db:delete') {
+    store.localDelete(event.data.id);
+  }
+  console.log('Subscription gave event', event);
+}); */
+/* if (socket.readyState === 1) {
+  socket.send(
+    JSON.stringify({
+      id: socketId.value,
+      subscribe: props.model,
+      filter: props.filter,
+      events: ['db:create', 'db:update', 'db:delete'],
+    })
+  );
+} else {
+  socket.addEventListener('open', () => {
+    socket.send(
+      JSON.stringify({
+        id: socketId.value,
+        subscribe: props.model,
+        filter: props.filter,
+        events: ['db:create', 'db:update', 'db:delete'],
+      })
+    );
+  });
+} */
 
 const relations = computed(() => ({
   ...settings.hasMany,
@@ -144,6 +194,7 @@ fetch();
 watch(filterString, () => {
   fetch();
 });
+
 watch(ids, (newIds, oldIds) => {
   cache.subscribe(props.model, newIds);
   cache.unsubscribe(props.model, oldIds);
@@ -158,11 +209,21 @@ watch(includeIds, (newIds, oldIds) => {
   });
 });
 
+function handleSocketEvent(event: any) {
+  if (event.type === 'db:create' && event.subIds.includes(socketId.value)) {
+    pushId(event.id);
+  }
+}
+
+// socket.addEventListener('message', handleSocketEvent);
+
 onUnmounted(() => {
   cache.unsubscribe(props.model, ids.value);
   Object.keys(includeIds.value).forEach((model) => {
     cache.unsubscribe(model, includeIds.value[model]);
   });
+
+  // sub.unsubscribe();
 });
 
 emit('ready', {

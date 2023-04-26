@@ -5,6 +5,7 @@ import {
   ref,
   watch,
   type ComputedRef,
+  nextTick,
 } from 'vue';
 import useFetchState from '../useFetchState';
 import unwrap from './unwrap';
@@ -117,7 +118,6 @@ export default function createUseSingle<Models, IdType>(
     // Update cache subscriptions when ids change
 
     watch(includedIds, (newIds, oldIds) => {
-      console.log('Newold', newIds, oldIds);
       Object.keys(newIds).forEach((model) => {
         cacheStore.subscribe(model, newIds[model]);
       });

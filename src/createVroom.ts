@@ -11,6 +11,8 @@ import createApi from './api';
 import createUseList from './components/createUseList';
 import createUseSingle from './components/createUseSingle';
 import createUseSingleton from './components/createUseSingleton';
+import Sockets from './sockets';
+import Mocket from './server/Mocket';
 
 export default function createVroom<Options extends Settings & { models: any }>(
   options: Options
@@ -33,6 +35,18 @@ export default function createVroom<Options extends Settings & { models: any }>(
   const server = __DEV__
     ? createServer<typeof db, IdentityModel>(settings, models, db)
     : null;
+  const mocket =
+    __DEV__ && settings.server?.enable
+      ? new Mocket<typeof db, IdentityModel>(
+          db,
+          settings.identityModel ? settings.identityModel() : null
+        )
+      : null;
+
+  const socket = new Sockets<ModelTypes>(
+    settings.ws,
+    mocket as any as Mocket<any, any>
+  );
   const api = createApi(server);
 
   const stores = createStores<ModelTypes, Options['models']>(
@@ -51,6 +65,8 @@ export default function createVroom<Options extends Settings & { models: any }>(
     server,
     stores,
     cache,
+    socket,
+    mocket,
     types: {} as ModelTypes,
     useList: createUseList<ModelTypes, IdType<Options>['id']>(
       models,
@@ -67,6 +83,7 @@ export default function createVroom<Options extends Settings & { models: any }>(
       app.provide('stores', stores);
       app.provide('models', models);
       app.provide('cache', cache);
+      app.provide('socket', socket);
       app.provide('vroomTypes', {} as ModelTypes);
       app.component('FetchList', FetchList);
       app.component('FetchSingle', FetchSingle);

@@ -1,5 +1,6 @@
 import ServerError from '../ServerError';
 import type { FieldTypes, HasId, ID } from '../types';
+import { sendMessage } from './Mocket';
 
 type Relation = {
   [K: string]: () => string;
@@ -16,6 +17,8 @@ type RelationUpdate = {
 type Schema = {
   [k: string]: { type: () => any; optional?: boolean };
 };
+
+const bc = new BroadcastChannel('db:changes');
 
 export class Collection<Type extends HasId> {
   db: any;
@@ -188,6 +191,14 @@ export class Collection<Type extends HasId> {
     if (relationsToUpdate.length) {
       this.updateRelations(relationsToUpdate, []);
     }
+
+    this.sync();
+    /* sendMessage({
+      type: 'db:create',
+      model: this.model,
+      id: newId,
+      data: this.items[this.items.length - 1],
+    }); */
 
     return this.items[this.items.length - 1];
   }
@@ -411,10 +422,20 @@ export class Collection<Type extends HasId> {
       this.updateRelations(relationsToUpdate, relationsToRemove);
     }
 
+    this.sync();
+
+    /* sendMessage({
+      type: 'db:update',
+      model: this.model,
+      id: id,
+      data: this.items[index],
+    }); */
+
     return this.items[index];
   }
 
   destroy(id: Type['id']) {
+    const item = this.find(id);
     this.items = this.items.filter((item) => item.id !== id);
 
     if (this.addDevtoolsEvent) {
@@ -423,12 +444,24 @@ export class Collection<Type extends HasId> {
       });
     }
 
+    this.sync();
+    /* sendMessage({ type: 'db:delete', model: this.model, id: id, data: item }); */
+
     // TODO Update relations on delete also
   }
 
   truncate() {
     this.items = [];
     this.lastId = 0;
+  }
+
+  sync() {
+    bc.postMessage({
+      type: 'db:sync',
+      model: this.model,
+      items: this.items,
+      lastId: this.lastId,
+    });
   }
 }
 
@@ -466,6 +499,14 @@ export default function createDb<ModelTypes>(options: any) {
       db
     );
   });
+
+  setTimeout(() => {
+    bc.onmessage = function (ev: any) {
+      console.log('Getting a bc message', ev);
+      db[ev.data.model].items = ev.data.items;
+      db[ev.data.model].lastId = ev.data.lastId;
+    };
+  }, 100);
 
   return db as Database<ModelTypes>;
 }
