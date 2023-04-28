@@ -22,6 +22,7 @@ export default {
               text: 'Organisation / optimisation',
               link: '/guide/intro/organization',
             },
+            { text: 'API helper', link: '/guide/intro/api' },
           ],
         },
         {
