@@ -11,6 +11,9 @@ type ApiRequest = {
 
 const headers = { 'Content-Type': 'application/json' } as any;
 const requestOptions = {} as FetchRequestOptions;
+const intercept = {
+  error: null as ((e: ServerError) => void) | null,
+};
 
 function api(
   method: string,
@@ -34,7 +37,12 @@ function api(
   }
 
   if (server) {
-    return server.handleRequest(method, urlWithSearch, payload, requestHeaders);
+    return server
+      .handleRequest(method, urlWithSearch, payload, requestHeaders)
+      .catch((e: unknown) => {
+        if (intercept.error) intercept.error(e as ServerError);
+        throw e;
+      });
   }
 
   return fetch(urlWithSearch, {
@@ -42,24 +50,32 @@ function api(
     method,
     headers: requestHeaders,
     body: payload as any,
-  }).then(async (res) => {
-    let returnBody = {};
-    try {
-      // Try and parse the response json
-      returnBody = await res.json();
-    } catch {}
-    if (res.ok) {
-      // If okay return the response
-      return returnBody;
-    } else {
-      // If not, throw an error
-      throw new ServerError(res.status, returnBody);
-    }
-  });
+  })
+    .then(async (res) => {
+      let returnBody = {};
+      try {
+        // Try and parse the response json
+        returnBody = await res.json();
+      } catch {}
+      if (res.ok) {
+        // If okay return the response
+        return returnBody;
+      } else {
+        // If not, throw an error
+        throw new ServerError(res.status, returnBody);
+      }
+    })
+    .catch((e) => {
+      if (e instanceof ServerError) {
+        if (intercept.error) intercept.error(e);
+      }
+      throw e;
+    });
 }
 
 export default function createApi(server: any) {
   return {
+    intercept,
     headers,
     requestOptions,
     get(url: string, params?: ApiParams, extraHeaders?: any) {
