@@ -1,1 +1,0 @@
-import{_ as s,o as n,c as a,a as e}from"./app.2fbc5e8a.js";const C=JSON.parse('{"title":"Setting up the mock server","description":"","frontmatter":{},"headers":[],"relativePath":"guide/server/index.md"}'),l={name:"guide/server/index.md"},p=e("",3),o=[p];function t(c,r,i,d,y,D){return n(),a("div",null,o)}const A=s(l,[["render",t]]);export{C as __pageData,A as default};
