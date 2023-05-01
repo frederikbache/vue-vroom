@@ -12,6 +12,8 @@ import createUseList from './components/createUseList';
 import createUseSingle from './components/createUseSingle';
 import createUseSingleton from './components/createUseSingleton';
 
+let installedApp: any;
+
 export default function createVroom<Options extends Settings & { models: any }>(
   options: Options
 ) {
@@ -44,6 +46,12 @@ export default function createVroom<Options extends Settings & { models: any }>(
 
   const cache = createCache(stores);
 
+  if (installedApp) {
+    if (__DEV__ && server) {
+      setupDevtools(installedApp, db, server);
+    }
+  }
+
   return {
     api,
     db: db as VroomDb<Options['models'], IdType<Options>['id']>,
@@ -75,6 +83,8 @@ export default function createVroom<Options extends Settings & { models: any }>(
       if (__DEV__ && server) {
         setupDevtools(app, db, server);
       }
+
+      installedApp = app;
     },
   };
 }
