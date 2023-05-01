@@ -13,6 +13,7 @@ import createUseSingle from './components/createUseSingle';
 import createUseSingleton from './components/createUseSingleton';
 
 let installedApp: any;
+let devtoolsQueue = [] as any[];
 
 export default function createVroom<Options extends Settings & { models: any }>(
   options: Options
@@ -46,9 +47,11 @@ export default function createVroom<Options extends Settings & { models: any }>(
 
   const cache = createCache(stores);
 
-  if (installedApp) {
-    if (__DEV__ && server) {
+  if (__DEV__ && server) {
+    if (installedApp) {
       setupDevtools(installedApp, db, server);
+    } else {
+      devtoolsQueue.push([db, server]);
     }
   }
 
@@ -81,7 +84,7 @@ export default function createVroom<Options extends Settings & { models: any }>(
       app.component('FetchSingleton', FetchSingleton);
 
       if (__DEV__ && server) {
-        setupDevtools(app, db, server);
+        devtoolsQueue.forEach((q) => setupDevtools(app, q[0], q[1]));
       }
 
       installedApp = app;
