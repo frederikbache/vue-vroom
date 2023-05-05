@@ -18,6 +18,23 @@ export type ServerSettings = {
   delay?: number;
 };
 
+export type SimpleModelSettings = {
+  /** An array of actions to enable for this model */
+  only?: ActionName[];
+  /** The plural name of the model, defaults to [name]s */
+  plural?: string;
+  /** Base path for the model in the API */
+  path?: string;
+  /** Whether or not to wrap the API return in a data prop. Defaults to true. */
+  envelope?: boolean;
+  pagination?: {
+    type: 'page' | 'cursor';
+    defaultLimit: number;
+  };
+  inverse?: {
+    [local: string]: string | null;
+  };
+};
 export type ModelSettings = {
   /** An array of actions to enable for this model */
   only?: ActionName[];
@@ -27,6 +44,7 @@ export type ModelSettings = {
   path?: string;
   /** Whether or not to wrap the API return in a data prop. Defaults to true. */
   envelope?: boolean;
+  singleton?: true;
   pagination?: {
     type: 'page' | 'cursor';
     defaultLimit: number;

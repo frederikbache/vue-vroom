@@ -1,4 +1,4 @@
-import type { ModelSettings } from './types';
+import type { SimpleModelSettings } from './types';
 
 type RequiredFields<Fields, K extends keyof Fields> = Fields[K] extends {
   optional: boolean;
@@ -45,7 +45,7 @@ export default function defineModel<
   belongsTo?: BelongsTo;
   hasMany?: HasMany;
   singleton?: Singleton;
-} & ModelSettings) {
+} & SimpleModelSettings) {
   return {
     schema,
     hasMany: hasMany || ({} as HasMany),
