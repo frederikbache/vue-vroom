@@ -31,7 +31,7 @@ export default function defineModel<
   HasMany,
   BelongsTo,
   ItemActions extends IA<SchemaType<Schema>>,
-  Singleton
+  const Singleton
 >({
   schema,
   belongsTo,

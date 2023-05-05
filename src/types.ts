@@ -31,7 +31,6 @@ export type ModelSettings = {
     type: 'page' | 'cursor';
     defaultLimit: number;
   };
-  singleton?: true;
   inverse?: {
     [local: string]: string | null;
   };
