@@ -40,11 +40,12 @@ export function parseFilterField(field: string) {
 
 export function paginateItems(items: any[], page: number, limit: number) {
   return {
-    paginatedItems: items.slice((page - 1) * limit, page * limit),
+    paginatedItems:
+      limit === -1 ? items : items.slice((page - 1) * limit, page * limit),
     paginationMeta: {
       page,
       results: items.length,
-      pages: Math.ceil(items.length / limit),
+      pages: limit === -1 ? 1 : Math.ceil(items.length / limit),
     },
   };
 }
