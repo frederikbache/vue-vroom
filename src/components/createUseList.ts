@@ -172,7 +172,7 @@ export default function createUseList<Models, IdType>(
 
     // Create
     const create = (data: Partial<ItemType>) => {
-      store.create(data).then((item: any) => {
+      return store.create(data).then((item: any) => {
         // After create, push id to ids, to add to list
         pushId(item.id);
       });
