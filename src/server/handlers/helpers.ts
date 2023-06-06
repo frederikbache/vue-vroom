@@ -72,21 +72,31 @@ export function cursorPaginate(
   };
 }
 
-export function sortItems(items: any[], sortStr: string) {
+export function sortItems(
+  items: any[],
+  sortStr: string,
+  sorters: any,
+  db: any
+) {
   if (!sortStr) return items;
   const sort = sortStr.split(',');
   return [...items].sort((a, b) => {
     for (let i = 0; i < sort.length; i += 1) {
       const field = sort[i].replace(/^-/, '');
       const dir = sort[i].charAt(0) === '-' ? -1 : 1;
-      const aVal = a[field];
-      const bVal = b[field];
       let comp = 0;
-      if (typeof aVal === 'string') {
-        comp = aVal.localeCompare(bVal) * dir;
+      if (sorters && sorters[field]) {
+        comp = sorters[field](a, b, dir, db);
       } else {
-        comp = (aVal - bVal) * dir;
+        const aVal = a[field];
+        const bVal = b[field];
+        if (typeof aVal === 'string') {
+          comp = aVal.localeCompare(bVal) * dir;
+        } else {
+          comp = (aVal - bVal) * dir;
+        }
       }
+
       if (comp !== 0) return comp;
     }
     return 0;

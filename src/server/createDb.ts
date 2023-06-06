@@ -27,6 +27,7 @@ export class Collection<Type extends HasId> {
   inverse: { [field: string]: string };
   lastId: number;
   idsAreNumbers: boolean;
+  index: { [id: string | number]: number };
   idFactory: (i: number) => string;
   addDevtoolsEvent:
     | ((title: string, subtitle: string, data: any) => void)
@@ -52,6 +53,7 @@ export class Collection<Type extends HasId> {
     this.idsAreNumbers = idsAreNumbers;
     this.idFactory = idFactory;
     this.inverse = inverse || {};
+    this.index = {};
   }
 
   find(id: Type['id']) {
@@ -59,7 +61,13 @@ export class Collection<Type extends HasId> {
     if (this.idsAreNumbers && typeof id === 'string') {
       normalisedId = parseInt(id, 10);
     }
-    return this.all().find((item) => item.id === normalisedId);
+
+    if (normalisedId in this.index) {
+      return JSON.parse(JSON.stringify(this.items[this.index[normalisedId]]));
+    }
+    return JSON.parse(
+      JSON.stringify(this.items.find((item) => item.id === normalisedId))
+    );
   }
 
   where(filter: (item: Type) => boolean) {
@@ -116,6 +124,13 @@ export class Collection<Type extends HasId> {
       }
       const collection = this.db[rel.model] as Collection<any>;
       collection.pushRelation(this.model, rel.id, rel.newId, inverse);
+    });
+  }
+
+  updateIndex() {
+    this.index = {};
+    this.items.forEach((item, index) => {
+      this.index[item.id] = index;
     });
   }
 
@@ -177,6 +192,7 @@ export class Collection<Type extends HasId> {
       id: newId,
       ...data,
     } as any);
+    this.updateIndex();
 
     if (this.addDevtoolsEvent) {
       this.addDevtoolsEvent(this.model, 'create', {
@@ -262,15 +278,15 @@ export class Collection<Type extends HasId> {
     if (key in this.belongsTo) {
       const model = this.belongsTo[key]();
       const field = key + 'Id';
-      // @ts-expect-error
+
       if (!this.find(id)[field]) return [];
-      // @ts-expect-error
+
       return [this.db[model].find(this.find(id)[field])];
     }
     if (key in this.hasMany) {
       const model = this.hasMany[key]();
       const field = key + 'Ids';
-      // @ts-expect-error
+
       return this.find(id)[field].map((relId: ID) => {
         return this.db[model].find(relId);
       });
@@ -416,6 +432,7 @@ export class Collection<Type extends HasId> {
 
   destroy(id: Type['id']) {
     this.items = this.items.filter((item) => item.id !== id);
+    this.updateIndex();
 
     if (this.addDevtoolsEvent) {
       this.addDevtoolsEvent(this.model, 'delete', {
@@ -429,6 +446,7 @@ export class Collection<Type extends HasId> {
   truncate() {
     this.items = [];
     this.lastId = 0;
+    this.updateIndex();
   }
 }
 
