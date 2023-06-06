@@ -98,10 +98,12 @@ export default function createUseSingle<Models, IdType>(
         const hasMany = rel in modelSettings.hasMany;
         const relStore = stores[relations.value[rel]()]();
         if (hasMany) {
+          if (!item[rel + 'Ids']) return;
           item[rel] = relStore.items.filter((relItem: any) =>
             item[rel + 'Ids'].includes(relItem.id)
           );
         } else {
+          if (!item[rel + 'Id']) return;
           item[rel] = relStore.items.find(
             (relItem: any) => item[rel + 'Id'] === relItem.id
           );

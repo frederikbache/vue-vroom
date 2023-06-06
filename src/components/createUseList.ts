@@ -55,6 +55,7 @@ export default function createUseList<Models, IdType>(
     const cacheStore = cache();
     const ids = ref([] as IdType[]);
     const meta = ref({} as any);
+    const lastPagination = ref('');
 
     const modelSettings = models[model];
 
@@ -87,8 +88,14 @@ export default function createUseList<Models, IdType>(
           path.value
         )
         .then((res: any) => {
+          const paginationChanged =
+            lastPagination.value !== JSON.stringify(pagination.value);
+          lastPagination.value = JSON.stringify(pagination.value);
           const resIds = res.items.map((item: any) => item.id);
-          ids.value = options.mergePages ? [...ids.value, ...resIds] : resIds;
+          ids.value =
+            options.mergePages && paginationChanged
+              ? [...ids.value, ...resIds]
+              : resIds;
           state.value = 'none';
           meta.value = res.meta;
           hasLoaded.value = true;
