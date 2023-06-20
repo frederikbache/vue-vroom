@@ -11,15 +11,25 @@ type OptionalFields<Fields, K extends keyof Fields> = Fields[K] extends {
   ? K
   : never;
 type SchemaType<Fields> = {
-  [K in keyof Fields as RequiredFields<Fields, K>]: ReturnType<
-    // @ts-expect-error
-    Fields[K]['type']
-  >;
+  [K in keyof Fields as RequiredFields<Fields, K>]: Fields[K] extends {
+    nullable: boolean;
+  }
+    ? ReturnType<
+        // @ts-expect-error
+        Fields[K]['type']
+      > | null
+    : // @ts-expect-error
+      ReturnType<Fields[K]['type']>;
 } & {
-  [K in keyof Fields as OptionalFields<Fields, K>]?: ReturnType<
-    // @ts-expect-error
-    Fields[K]['type']
-  >;
+  [K in keyof Fields as OptionalFields<Fields, K>]?: Fields[K] extends {
+    nullable: boolean;
+  }
+    ? ReturnType<
+        // @ts-expect-error
+        Fields[K]['type']
+      > | null
+    : // @ts-expect-error
+      ReturnType<Fields[K]['type']>;
 };
 
 type IA<Type> = {
