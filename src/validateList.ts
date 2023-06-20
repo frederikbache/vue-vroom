@@ -30,6 +30,7 @@ function validateItem(item: any, model: any) {
         errors.push({ id: item.id, type: 'field_missing', field: k });
       }
     } else if (typeof item[k] !== typeof value.type()) {
+      if (value.nullable && item[k] === null) return;
       errors.push({
         id: item.id,
         type: 'type_mismatch',
