@@ -74,6 +74,18 @@ export default function createUseList<Models, IdType>(
     const { error, state, hasLoaded, isLoading, isFailed, handleError } =
       useFetchState(!!options.loadOnUpdate);
 
+    if (modelSettings.includable) {
+      include.value.forEach((i: string) => {
+        if (!modelSettings.includable.includes(i)) {
+          throw new Error(
+            `Vroom: model ${
+              model as string
+            } does not have an includable relation ${i}`
+          );
+        }
+      });
+    }
+
     /**
      * Fetch list
      */
