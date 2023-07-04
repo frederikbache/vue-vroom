@@ -46,6 +46,18 @@ export default function createUseSingle<Models, IdType>(
     );
     const path = computed(() => (options.path ? unwrap(options.path) : null));
 
+    if (modelSettings.includable) {
+      include.value.forEach((i: string) => {
+        if (!modelSettings.includable.includes(i)) {
+          throw new Error(
+            `Vroom: model ${
+              model as string
+            } does not have an includable relation ${i}`
+          );
+        }
+      });
+    }
+
     const { error, state, hasLoaded, isLoading, isFailed, handleError } =
       useFetchState(!!options.loadOnUpdate);
 

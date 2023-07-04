@@ -15,6 +15,7 @@ const vroom = createVroom({
       belongsTo: {
         author: () => 'author',
       },
+      includable: [],
     }),
     author: defineModel({
       schema: {
@@ -23,6 +24,7 @@ const vroom = createVroom({
       hasMany: {
         books: () => 'book',
       },
+      includable: ['author'],
     }),
   },
   server: {
@@ -106,5 +108,13 @@ describe('Use list', () => {
 
     expect(wrapper.vm.isLoading).toBe(false);
     expect(wrapper.vm.item.title).toBe('The Hobbit');
+  });
+
+  it('Respect includable', async () => {
+    expect(() => {
+      getWrapper('book', '1', {
+        include: ['author'],
+      });
+    }).toThrowError('does not have');
   });
 });
