@@ -32,7 +32,7 @@ export default function indexHandler(
     return match;
   });
 
-  items = sortItems(items, sort);
+  items = sortItems(items, sort, request.sorters, db);
 
   const hasMany = db[request.model].hasMany;
   const includeList = include ? include.split(',') : [];
