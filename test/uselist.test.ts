@@ -3,6 +3,7 @@ import { createVroom, defineModel } from '.';
 import { beforeEach, describe, it, expect, vi, test } from 'vitest';
 import { createApp, defineComponent, nextTick, ref } from 'vue';
 import { createPinia } from 'pinia';
+import { dir } from 'console';
 
 const app = createApp({});
 const vroom = createVroom({
@@ -30,6 +31,14 @@ const vroom = createVroom({
   server: {
     enable: true,
     delay: 0,
+  },
+});
+
+vroom.server?.addSorters({
+  author: {
+    reverse: (a, b, dir) => {
+      return a.name.localeCompare(b.name) * dir * -1;
+    },
   },
 });
 
@@ -143,8 +152,9 @@ describe('Use list', () => {
 
   it('Can sort', async () => {
     const sortDir = ref('ASC');
+    const sortField = ref('name');
     const wrapper = getWrapper('author', {
-      sort: [{ field: 'name', dir: sortDir }],
+      sort: [{ field: sortField, dir: sortDir }],
     });
     await new Promise((r) => setTimeout(r, 2));
     expect(wrapper.vm.items).toStrictEqual([
@@ -153,6 +163,14 @@ describe('Use list', () => {
     ]);
 
     sortDir.value = 'DESC';
+    await new Promise((r) => setTimeout(r, 5));
+    expect(wrapper.vm.items).toStrictEqual([
+      { id: '1', name: 'JRR Tolkien' },
+      { id: '2', name: 'George R.R. Martin' },
+    ]);
+
+    sortField.value = 'reverse';
+    sortDir.value = 'ASC';
     await new Promise((r) => setTimeout(r, 5));
     expect(wrapper.vm.items).toStrictEqual([
       { id: '1', name: 'JRR Tolkien' },
