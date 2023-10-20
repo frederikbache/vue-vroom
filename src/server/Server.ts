@@ -55,6 +55,19 @@ type Filter<Db> = {
   };
 };
 
+type Sorters<Db> = {
+  [K in keyof Partial<Db>]: {
+    [field: string]: (
+      // @ts-expect-error
+      a: Db[K]['items'][0],
+      // @ts-expect-error
+      b: Db[K]['items'][0],
+      dir: number,
+      db: Db
+    ) => number;
+  };
+};
+
 type SideEffect<Db, IdentityModel> = {
   [K in keyof Partial<Db>]: {
     index?: (
@@ -128,6 +141,9 @@ export type Request = {
     [action in ActionName]?: (item: any, db: any, data?: any) => any | void;
   };
   identity: any;
+  sorters: {
+    [field: string]: (a: any, b: any, dir: number, db: any) => number;
+  };
 };
 
 export default class Server<DbType, IdentityModel> {
@@ -142,6 +158,7 @@ export default class Server<DbType, IdentityModel> {
   protected idsAreNumbers: boolean;
   protected filters: Filter<DbType>;
   protected sideEffects: SideEffect<DbType, IdentityModel>;
+  protected sorters: Sorters<DbType>;
   protected addDevtoolsEvent: ((event: any) => void) | undefined;
   protected events: any[];
   naming: ApiNames;
@@ -169,6 +186,7 @@ export default class Server<DbType, IdentityModel> {
     this.generateRoutes(models);
     // this.setupInterceptor(this.baseURL);
     this.filters = {} as Filter<DbType>;
+    this.sorters = {} as Sorters<DbType>;
     this.sideEffects = {} as SideEffect<DbType, IdentityModel>;
     this.events = [];
     this.naming = settings.naming as ApiNames;
@@ -498,6 +516,8 @@ export default class Server<DbType, IdentityModel> {
         // @ts-expect-error
         sideEffects: this.sideEffects ? this.sideEffects[route.model] : {},
         identity: this.identity,
+        // @ts-expect-error
+        sorters: this.sorters ? this.sorters[route.model] : {},
       };
 
       return route.handler(request as any, this.db, this);
@@ -573,6 +593,21 @@ export default class Server<DbType, IdentityModel> {
         ...this.sideEffects[key],
         // @ts-expect-error
         ...sideEffect,
+      };
+    });
+  }
+
+  /** Add one or more custom sorters */
+  public addSorters(obj: Sorters<DbType>) {
+    Object.entries(obj).forEach(([model, sorter]) => {
+      const key = model as keyof DbType;
+      if (!(model in this.sorters)) {
+        this.sorters[key] = {};
+      }
+      this.sorters[key] = {
+        ...this.sorters[key],
+        // @ts-expect-error
+        ...sorter,
       };
     });
   }
