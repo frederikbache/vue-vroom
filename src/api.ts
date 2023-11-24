@@ -30,9 +30,8 @@ function api(
   let payload: ApiBody | string | undefined = body;
 
   if (payload instanceof FormData) {
-    requestHeaders['Content-Type'] = 'multipart/form-data';
-  }
-  if (requestHeaders['Content-Type'] === 'application/json' && payload) {
+    delete requestHeaders['Content-Type'];
+  } else if (requestHeaders['Content-Type'] === 'application/json' && payload) {
     payload = JSON.stringify(payload);
   }
 
