@@ -235,8 +235,8 @@ function createStore(
       localUpdate(id: ID, patchData: any) {
         this.add([{ id, ...patchData }]);
       },
-      delete(id: ID) {
-        return api.delete(endpoint + '/' + id).then(() => {
+      delete(id: ID, params?: any) {
+        return api.delete(endpoint + '/' + id, undefined, params).then(() => {
           this.items = this.items.filter((item: any) => item.id !== id);
         });
       },
