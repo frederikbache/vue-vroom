@@ -120,8 +120,8 @@ function createStore(
     : `${baseURL}/${name}`;
   const methods = {} as any;
   Object.keys(settings.itemActions).forEach((verb) => {
-    methods[verb] = function (id: any) {
-      return api.post(`${endpoint}/${id}/${verb}`).then((item: any) => {
+    methods[verb] = function (id: any, data?: any) {
+      return api.post(`${endpoint}/${id}/${verb}`, data).then((item: any) => {
         (this as any).add([item]);
       });
     };
