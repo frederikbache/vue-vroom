@@ -69,9 +69,7 @@ function api(
       }
     })
     .catch((e) => {
-      if (e instanceof ServerError) {
-        if (intercept.error) intercept.error(e);
-      }
+      if (intercept.error) intercept.error(e);
       throw e;
     });
 }
