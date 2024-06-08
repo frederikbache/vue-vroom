@@ -227,4 +227,19 @@ describe('Use list', () => {
       });
     }).toThrowError('does not have');
   });
+
+  it('Can lazy load', async () => {
+    const wrapper = getWrapper('book', { lazy: true });
+
+    expect(wrapper.vm.isLoading).toBe(false);
+
+    wrapper.vm.refresh();
+
+    expect(wrapper.vm.isLoading).toBe(true);
+
+    await new Promise((r) => setTimeout(r, 2));
+
+    expect(wrapper.vm.isLoading).toBe(false);
+    expect(wrapper.vm.items).toHaveLength(4);
+  });
 });

@@ -38,6 +38,7 @@ type OptionsType<Models, Model extends keyof Models, IdType> = {
   mergePages?: boolean;
   path?: string;
   loadOnUpdate?: boolean;
+  lazy?: boolean;
 };
 
 export default function createUseList<Models, IdType>(
@@ -70,6 +71,8 @@ export default function createUseList<Models, IdType>(
       options.include ? unwrap(options.include) : []
     );
     const path = computed(() => (options.path ? unwrap(options.path) : null));
+
+    const autoFetch = computed(() => !options.lazy);
 
     const { error, state, hasLoaded, isLoading, isFailed, handleError } =
       useFetchState(!!options.loadOnUpdate);
@@ -116,7 +119,9 @@ export default function createUseList<Models, IdType>(
     }
 
     // Run the fetch
-    fetch();
+    if (autoFetch.value) {
+      fetch();
+    }
 
     const filterString = computed(
       () =>
@@ -128,7 +133,9 @@ export default function createUseList<Models, IdType>(
     );
 
     // Run fetch when the filter changes
-    watch(filterString, fetch);
+    watch(filterString, () => {
+      if (autoFetch.value) fetch();
+    });
 
     /**
      * Load the items
