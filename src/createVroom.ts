@@ -11,6 +11,7 @@ import createApi from './api';
 import createUseList from './components/createUseList';
 import createUseSingle from './components/createUseSingle';
 import createUseSingleton from './components/createUseSingleton';
+import createStoreShortHands from './components/createStoreShorthands';
 
 let installedApp: any;
 let devtoolsQueue = [] as any[];
@@ -74,6 +75,7 @@ export default function createVroom<Options extends Settings & { models: any }>(
       cache
     ),
     useSingleton: createUseSingleton<ModelTypes>(stores),
+    ...createStoreShortHands<ModelTypes, IdType<Options>['id']>(stores),
     install(app: any) {
       app.provide('stores', stores);
       app.provide('models', models);

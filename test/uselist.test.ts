@@ -3,7 +3,6 @@ import { createVroom, defineModel } from '.';
 import { beforeEach, describe, it, expect, vi, test } from 'vitest';
 import { createApp, defineComponent, nextTick, ref } from 'vue';
 import { createPinia } from 'pinia';
-import { dir } from 'console';
 
 const app = createApp({});
 const vroom = createVroom({
