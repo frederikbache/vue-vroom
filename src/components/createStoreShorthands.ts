@@ -1,8 +1,4 @@
-type DeepFlatten<T> = T extends Object
-  ? { [key in keyof T]: DeepFlatten<T[key]> }
-  : T;
-
-type PostData<Model> = DeepFlatten<Partial<Omit<Model, 'id'>>>;
+type PostData<Model> = Partial<Omit<Model, 'id'>>;
 
 type SortSettings = {
   field: string;

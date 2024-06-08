@@ -18,10 +18,6 @@ export type ServerSettings = {
   delay?: number;
 };
 
-type DeepFlatten<T> = T extends Object
-  ? { [key in keyof T]: DeepFlatten<T[key]> }
-  : T;
-
 export type SimpleModelSettings = {
   /** An array of actions to enable for this model */
   only?: ActionName[];
@@ -129,19 +125,17 @@ export type Rel<One, Models, Id> = One extends { [key: string]: () => string }
   : {};
 
 export type FieldTypes<Models, Id> = {
-  [K in keyof Models]: DeepFlatten<
+  // @ts-expect-error
+  [K in keyof Models]: Models[K]['types'] &
+    Id &
     // @ts-expect-error
-    Models[K]['types'] &
-      Id &
-      // @ts-expect-error
-      Rels<Models[K]['hasMany'], Models, Id> &
-      // @ts-expect-error
-      Rel<Models[K]['belongsTo'], Models, Id> &
-      // @ts-expect-error
-      RelId<Models[K]['belongsTo'], Id['id']> &
-      // @ts-expect-error
-      RelIds<Models[K]['hasMany'], Id['id']>
-  >;
+    Rels<Models[K]['hasMany'], Models, Id> &
+    // @ts-expect-error
+    Rel<Models[K]['belongsTo'], Models, Id> &
+    // @ts-expect-error
+    RelId<Models[K]['belongsTo'], Id['id']> &
+    // @ts-expect-error
+    RelIds<Models[K]['hasMany'], Id['id']>;
 };
 
 export type IdType<IdSettings> = IdSettings extends { idsAreNumbers: true }
