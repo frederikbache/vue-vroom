@@ -128,19 +128,21 @@ export type Rel<One, Models, Id> = One extends { [key: string]: () => string }
     }
   : {};
 
-export type FieldTypes<Models, Id> = DeepFlatten<{
-  // @ts-expect-error
-  [K in keyof Models]: Models[K]['types'] &
-    Id &
+export type FieldTypes<Models, Id> = {
+  [K in keyof Models]: DeepFlatten<
     // @ts-expect-error
-    Rels<Models[K]['hasMany'], Models, Id> &
-    // @ts-expect-error
-    Rel<Models[K]['belongsTo'], Models, Id> &
-    // @ts-expect-error
-    RelId<Models[K]['belongsTo'], Id['id']> &
-    // @ts-expect-error
-    RelIds<Models[K]['hasMany'], Id['id']>;
-}>;
+    Models[K]['types'] &
+      Id &
+      // @ts-expect-error
+      Rels<Models[K]['hasMany'], Models, Id> &
+      // @ts-expect-error
+      Rel<Models[K]['belongsTo'], Models, Id> &
+      // @ts-expect-error
+      RelId<Models[K]['belongsTo'], Id['id']> &
+      // @ts-expect-error
+      RelIds<Models[K]['hasMany'], Id['id']>
+  >;
+};
 
 export type IdType<IdSettings> = IdSettings extends { idsAreNumbers: true }
   ? { id: number }
