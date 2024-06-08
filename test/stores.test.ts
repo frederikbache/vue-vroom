@@ -12,6 +12,12 @@ const vroom = createVroom({
         title: { type: String },
       },
     }),
+    profile: defineModel({
+      schema: {
+        name: { type: String },
+      },
+      singleton: true,
+    }),
   },
   server: {
     enable: false,
@@ -44,7 +50,15 @@ describe('Stores', () => {
       headers: { 'Content-Type': 'application/json' },
     });
 
-    expect(spy).toHaveBeenCalledTimes(1);
+    vroom.list('book').catch(() => {});
+
+    expect(spy).toHaveBeenCalledWith('/books', {
+      method: 'GET',
+      body: undefined,
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 
   it('List: filter', () => {
@@ -62,7 +76,22 @@ describe('Stores', () => {
       }
     );
 
-    expect(spy).toHaveBeenCalledTimes(1);
+    vroom
+      .list('book', {
+        filter: { foo: 'bar', baz: { lt: 10 } },
+      })
+      .catch(() => {});
+
+    expect(spy).toHaveBeenCalledWith(
+      '/books?' + encodeURI('foo=bar&baz[lt]=10'),
+      {
+        method: 'GET',
+        body: undefined,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 
   it('List: pagination', () => {
@@ -77,7 +106,19 @@ describe('Stores', () => {
       headers: { 'Content-Type': 'application/json' },
     });
 
-    expect(spy).toHaveBeenCalledTimes(1);
+    vroom
+      .list('book', {
+        pagination: { page: 2, limit: 5 },
+      })
+      .catch(() => {});
+
+    expect(spy).toHaveBeenCalledWith('/books?page=2&limit=5', {
+      method: 'GET',
+      body: undefined,
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 
   it('List: sort', () => {
@@ -103,7 +144,25 @@ describe('Stores', () => {
       }
     );
 
-    expect(spy).toHaveBeenCalledTimes(1);
+    vroom
+      .list('book', {
+        sort: [
+          { field: 'year', dir: 'DESC' },
+          { field: 'rating', dir: 'ASC' },
+        ],
+      })
+      .catch(() => {});
+
+    expect(spy).toHaveBeenCalledWith(
+      '/books?sort=' + encodeURIComponent('-year,rating'),
+      {
+        method: 'GET',
+        body: undefined,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 
   it('List: include', () => {
@@ -121,6 +180,50 @@ describe('Stores', () => {
       }
     );
 
+    vroom.list('book', { include: ['publisher', 'author'] }).catch(() => {});
+    expect(spy).toHaveBeenCalledWith(
+      '/books?include=' + encodeURIComponent('publisher,author'),
+      {
+        method: 'GET',
+        body: undefined,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  it('Single: can fetch', () => {
+    vroom.get('book', '1').catch(() => {});
+
+    expect(spy).toHaveBeenCalledWith('/books/1', {
+      method: 'GET',
+      body: undefined,
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    vroom.get('book', '1', { include: ['author'] }).catch(() => {});
+
+    expect(spy).toHaveBeenCalledWith('/books/1?include=author', {
+      method: 'GET',
+      body: undefined,
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  it('Singleton: can fetch', () => {
+    vroom.getSingleton('profile').catch(() => {});
+
+    expect(spy).toHaveBeenCalledWith('/profile', {
+      method: 'GET',
+      body: undefined,
+      headers: { 'Content-Type': 'application/json' },
+    });
+
     expect(spy).toHaveBeenCalledTimes(1);
   });
 
@@ -136,6 +239,16 @@ describe('Stores', () => {
     });
 
     expect(spy).toHaveBeenCalledTimes(1);
+
+    vroom.create('book', { title: 'The Lord of the Rings' }).catch(() => {});
+
+    expect(spy).toHaveBeenCalledWith('/books', {
+      method: 'POST',
+      body: JSON.stringify({ title: 'The Lord of the Rings' }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 
   it('Can update an item', () => {
@@ -153,8 +266,18 @@ describe('Stores', () => {
       body: JSON.stringify({ title: 'The Hobbit' }),
       headers: { 'Content-Type': 'application/json' },
     });
-
     expect(spy).toHaveBeenCalledTimes(1);
+
+    vroom
+      .update('book', '1', { title: 'The Lord of the Rings' })
+      .catch(() => {});
+
+    expect(spy).toHaveBeenCalledWith('/books/1', {
+      method: 'PATCH',
+      body: JSON.stringify({ title: 'The Lord of the Rings' }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 
   it('Can delete an item', () => {
@@ -172,6 +295,16 @@ describe('Stores', () => {
     });
 
     expect(spy).toHaveBeenCalledTimes(1);
+
+    vroom.delete('book', '1').catch(() => {});
+
+    expect(spy).toHaveBeenCalledWith('/books/1', {
+      method: 'DELETE',
+      body: undefined,
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 
   it('Can bulk create', () => {
