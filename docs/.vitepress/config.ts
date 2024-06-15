@@ -48,6 +48,19 @@ export default {
           ],
         },
         {
+          text: 'Listing items with useList',
+          items: [
+            { text: 'Intro', link: '/guide/using/use-list' },
+            { text: 'Sorting', link: '/guide/using/use-list-sort' },
+            { text: 'Pagination', link: '/guide/using/use-list-pagination' },
+            { text: 'Filtering', link: '/guide/using/use-list-filter' },
+            {
+              text: 'Including relations',
+              link: '/guide/using/use-list-include',
+            },
+          ],
+        },
+        {
           text: 'Fetching models',
           items: [
             {
