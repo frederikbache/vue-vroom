@@ -1,0 +1,1 @@
+import{_ as s,o as a,c as n,a as o}from"./app.3ac53504.js";const C=JSON.parse('{"title":"Pagination settings","description":"","frontmatter":{},"headers":[],"relativePath":"guide/models/pagination.md"}'),p={name:"guide/models/pagination.md"},l=o("",4),e=[l];function t(c,r,i,D,y,F){return a(),n("div",null,e)}const d=s(p,[["render",t]]);export{C as __pageData,d as default};

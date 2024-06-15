@@ -1,0 +1,1 @@
+import{_ as s,o as n,c as a,a as l}from"./app.3ac53504.js";const _=JSON.parse('{"title":"FetchSingleton","description":"","frontmatter":{},"headers":[],"relativePath":"guide/fetching/singleton.md"}'),e={name:"guide/fetching/singleton.md"},o=l("",3),p=[o];function t(c,r,F,D,i,y){return n(),a("div",null,p)}const g=s(e,[["render",t]]);export{_ as __pageData,g as default};
