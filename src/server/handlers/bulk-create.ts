@@ -1,3 +1,4 @@
+import helper from '../../helper';
 import { Request } from '../Server';
 
 export default function bulkCreateHandler(request: Request, db: any) {
@@ -10,7 +11,7 @@ export default function bulkCreateHandler(request: Request, db: any) {
 
     const hasMany = db[request.model].hasMany;
     Object.keys(newItem).forEach((field) => {
-      const rel = field.replace(/Ids$/, '');
+      const rel = helper.removeHasManyPostfix(field);
       if (rel in hasMany) {
         delete newItem[field];
       }

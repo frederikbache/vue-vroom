@@ -1,4 +1,4 @@
-import type { Settings, FieldTypes, IdType } from './types';
+import type { Settings, FieldTypes, IdType, SnakeCase } from './types';
 import createDb, { VroomDb } from './server/createDb';
 import createServer from './server/createServer';
 import createStores from './createStores';
@@ -12,6 +12,7 @@ import createUseList from './components/createUseList';
 import createUseSingle from './components/createUseSingle';
 import createUseSingleton from './components/createUseSingleton';
 import createStoreShortHands from './components/createStoreShorthands';
+import helper from './helper';
 
 let installedApp: any;
 let devtoolsQueue = [] as any[];
@@ -19,7 +20,11 @@ let devtoolsQueue = [] as any[];
 export default function createVroom<Options extends Settings & { models: any }>(
   options: Options
 ) {
-  type ModelTypes = FieldTypes<Options['models'], IdType<Options>>;
+  type ModelTypes = FieldTypes<
+    Options['models'],
+    IdType<Options>,
+    SnakeCase<Options>
+  >;
   type IdentityModel = ModelTypes[ReturnType<Options['identityModel']>];
 
   const { models, ...settings } = options;
@@ -32,6 +37,10 @@ export default function createVroom<Options extends Settings & { models: any }>(
   };
 
   settings.naming = namingWithDefault;
+
+  if (settings.useSnakeCase) {
+    helper.setCasing('snake');
+  }
 
   const db = __DEV__ ? createDb<ModelTypes>(options) : null;
   const server = __DEV__
@@ -58,7 +67,11 @@ export default function createVroom<Options extends Settings & { models: any }>(
 
   return {
     api,
-    db: db as VroomDb<Options['models'], IdType<Options>['id']>,
+    db: db as VroomDb<
+      Options['models'],
+      IdType<Options>['id'],
+      SnakeCase<Options>
+    >,
     settings,
     server,
     stores,

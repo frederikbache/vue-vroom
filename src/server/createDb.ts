@@ -1,4 +1,5 @@
 import ServerError from '../ServerError';
+import helper from '../helper';
 import type { FieldTypes, HasId, ID } from '../types';
 
 type Relation = {
@@ -133,7 +134,7 @@ export class Collection<Type extends HasId> {
     let data = { ...factoryData, ...json } as any;
 
     Object.entries(this.belongsTo).forEach(([name, modelFn]) => {
-      const nameWithId = name + 'Id';
+      const nameWithId = helper.addBelongsToPostFix(name);
 
       if (nameWithId in data) {
         relationsToUpdate.push({
@@ -154,7 +155,7 @@ export class Collection<Type extends HasId> {
     });
 
     Object.entries(this.hasMany).forEach(([name, modelFn]) => {
-      const nameWithId = name + 'Ids';
+      const nameWithId = helper.addHasManyPostFix(name);
 
       if (nameWithId in data) {
         data[nameWithId].forEach((id: ID) => {
@@ -204,7 +205,7 @@ export class Collection<Type extends HasId> {
       if (force && k !== force) return;
       if (v() === model) {
         const item = this.find(id) as any;
-        const field = k + 'Ids';
+        const field = helper.addHasManyPostFix(k);
         const existing = item[field] ? [...item[field]] : [];
         // Don't push if it's already there
         if (existing.includes(relationId)) return;
@@ -217,7 +218,7 @@ export class Collection<Type extends HasId> {
     Object.entries(this.belongsTo).forEach(([k, v]) => {
       if (force && k !== force) return;
       if (v() === model) {
-        const field = k + 'Id';
+        const field = helper.addBelongsToPostFix(k);
         const item = this.find(id) as any;
         // Don't update if it's already the same
         if (item[field] === relationId) return;
@@ -238,7 +239,7 @@ export class Collection<Type extends HasId> {
       if (force && k !== force) return;
       if (v() === model) {
         const item = this.find(id) as any;
-        const field = k + 'Ids';
+        const field = helper.addHasManyPostFix(k);
         const existing = item[field] ? [...item[field]] : [];
         if (!item[field].includes(relationId)) return;
         this.update(id, {
@@ -251,7 +252,7 @@ export class Collection<Type extends HasId> {
       if (force && k !== force) return;
       if (v() === model) {
         const item = this.find(id) as any;
-        const field = k + 'Id';
+        const field = helper.addBelongsToPostFix(k);
         if (item[field] !== relationId) return;
         this.update(id, { [field]: null } as any);
       }
@@ -261,7 +262,7 @@ export class Collection<Type extends HasId> {
   getRelated(id: Type['id'], key: string) {
     if (key in this.belongsTo) {
       const model = this.belongsTo[key]();
-      const field = key + 'Id';
+      const field = helper.addBelongsToPostFix(key);
       // @ts-expect-error
       if (!this.find(id)[field]) return [];
       // @ts-expect-error
@@ -269,7 +270,7 @@ export class Collection<Type extends HasId> {
     }
     if (key in this.hasMany) {
       const model = this.hasMany[key]();
-      const field = key + 'Ids';
+      const field = helper.addHasManyPostFix(key);
       // @ts-expect-error
       return this.find(id)[field].map((relId: ID) => {
         return this.db[model].find(relId);
@@ -301,7 +302,7 @@ export class Collection<Type extends HasId> {
     const relationsToRemove = [] as RelationUpdate[];
 
     Object.entries(this.belongsTo).forEach(([name, modelFn]) => {
-      const nameWithId = name + 'Id';
+      const nameWithId = helper.addBelongsToPostFix(name);
       const oldId = oldData[nameWithId];
       if (nameWithId in data) {
         if (data[nameWithId]) {
@@ -342,7 +343,7 @@ export class Collection<Type extends HasId> {
     });
 
     Object.entries(this.hasMany).forEach(([name, modelFn]) => {
-      const nameWithId = name + 'Ids';
+      const nameWithId = helper.addHasManyPostFix(name);
       const oldIds = oldData[nameWithId] || [];
       if (nameWithId in data) {
         const ids = data[nameWithId];
@@ -437,8 +438,8 @@ type Database<Models> = {
   [K in keyof Models]: Collection<Models[K]>;
 };
 
-export type VroomDb<Models, ModelId> = Database<
-  FieldTypes<Models, { id: ModelId }>
+export type VroomDb<Models, ModelId, SnakeCase> = Database<
+  FieldTypes<Models, { id: ModelId }, SnakeCase>
 >;
 
 export default function createDb<ModelTypes>(options: any) {

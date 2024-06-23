@@ -1,5 +1,6 @@
 import Server, { type Request } from '../Server';
 import ServerError from '../../ServerError';
+import helper from '../../helper';
 
 type SingleQuery = {
   include?: string;
@@ -23,7 +24,7 @@ export default function singleHandler(
   const hasMany = db[request.model].hasMany;
   const includeList = include ? include.split(',') : [];
   Object.keys(item).forEach((field) => {
-    const rel = field.replace(/Ids$/, '');
+    const rel = helper.removeHasManyPostfix(field);
     if (rel in hasMany && !includeList.includes(rel)) {
       delete item[field];
     }
@@ -44,7 +45,7 @@ export default function singleHandler(
       const relatedHasMany = db[modelName].hasMany;
       included[modelName] = included[modelName].map((item: any) => {
         Object.keys(item).forEach((field) => {
-          const rel = field.replace(/Ids$/, '');
+          const rel = helper.removeHasManyPostfix(field);
           if (rel in relatedHasMany) {
             delete item[field];
           }

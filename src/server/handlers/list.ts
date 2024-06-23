@@ -1,3 +1,4 @@
+import helper from '../../helper';
 import type { Request } from '../Server';
 import Server from '../Server';
 import { cursorPaginate, paginateItems, sortItems } from './helpers';
@@ -38,7 +39,7 @@ export default function indexHandler(
   const includeList = include ? include.split(',') : [];
   items = items.map((item: any) => {
     Object.keys(item).forEach((field) => {
-      const rel = field.replace(/Ids$/, '');
+      const rel = helper.removeHasManyPostfix(field);
       if (rel in hasMany && !includeList.includes(rel)) {
         delete item[field];
       }
@@ -92,7 +93,7 @@ export default function indexHandler(
     const relatedHasMany = db[modelName].hasMany;
     included[modelName] = included[modelName].map((item: any) => {
       Object.keys(item).forEach((field) => {
-        const rel = field.replace(/Ids$/, '');
+        const rel = helper.removeHasManyPostfix(field);
         if (rel in relatedHasMany) {
           delete item[field];
         }

@@ -8,6 +8,7 @@ import {
 } from 'vue';
 import useFetchState from '../useFetchState';
 import unwrap from './unwrap';
+import helper from '../helper';
 
 type R<T> = T | Ref<T | undefined> | ComputedRef<T | undefined>;
 
@@ -110,14 +111,15 @@ export default function createUseSingle<Models, IdType>(
         const hasMany = rel in modelSettings.hasMany;
         const relStore = stores[relations.value[rel]()]();
         if (hasMany) {
-          if (!item[rel + 'Ids']) return;
+          if (!item[helper.addHasManyPostFix(rel)]) return;
           item[rel] = relStore.items.filter((relItem: any) =>
-            item[rel + 'Ids'].includes(relItem.id)
+            item[helper.addHasManyPostFix(rel)].includes(relItem.id)
           );
         } else {
-          if (!item[rel + 'Id']) return;
+          if (!item[helper.addBelongsToPostFix(rel)]) return;
           item[rel] = relStore.items.find(
-            (relItem: any) => item[rel + 'Id'] === relItem.id
+            (relItem: any) =>
+              item[helper.addBelongsToPostFix(rel)] === relItem.id
           );
         }
       });
