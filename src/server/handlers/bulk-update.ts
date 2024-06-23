@@ -1,5 +1,6 @@
 import type { Request } from '../Server';
 import ServerError from '../../ServerError';
+import helper from '../../helper';
 
 export default function bulkUpdateHandler(request: Request, db: any) {
   const items = [] as any[];
@@ -16,7 +17,7 @@ export default function bulkUpdateHandler(request: Request, db: any) {
 
     const hasMany = db[request.model].hasMany;
     Object.keys(updatedItem).forEach((field) => {
-      const rel = field.replace(/Ids$/, '');
+      const rel = helper.removeHasManyPostfix(field);
       if (rel in hasMany) {
         delete updatedItem[field];
       }
