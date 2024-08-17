@@ -8,6 +8,7 @@ import {
 } from 'vue';
 import useFetchState from '../useFetchState';
 import unwrap from './unwrap';
+import helper from '../helper';
 
 type R<T> = T | Ref<T | undefined> | ComputedRef<T | undefined>;
 
@@ -164,11 +165,15 @@ export default function createUseList<Models, IdType>(
         all = all.map((item: any) => {
           const nestedItem = { ...item };
           if (isHasMany) {
-            includedIds[relModel].push(...item[`${rel}Ids`]);
-            nestedItem[rel] = relStore.list(item[`${rel}Ids`]);
+            includedIds[relModel].push(...item[helper.addHasManyPostFix(rel)]);
+            nestedItem[rel] = relStore.list(
+              item[helper.addHasManyPostFix(rel)]
+            );
           } else {
-            includedIds[relModel].push(item[`${rel}Id`]);
-            nestedItem[rel] = relStore.single(item[`${rel}Id`]);
+            includedIds[relModel].push(item[helper.addBelongsToPostFix(rel)]);
+            nestedItem[rel] = relStore.single(
+              item[helper.addBelongsToPostFix(rel)]
+            );
           }
           return nestedItem;
         });

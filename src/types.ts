@@ -86,23 +86,38 @@ export type Settings = {
     [key in keyof ApiNames]?: string;
   };
   identityModel?: any;
+  useSnakeCase?: boolean;
 };
 
-type RelId<One, Id> = One extends { [key: string]: () => string }
+type WithBelongsToPostFix<Obj, Id, SnakeCase> = SnakeCase extends true
   ? {
       // @ts-expect-error
-      [K in `${keyof One}Id`]: Id;
+      [K in `${keyof Obj}_id`]: Id;
     }
-  : {};
+  : {
+      // @ts-expect-error
+      [K in `${keyof Obj}Id`]: Id;
+    };
 
-type RelIds<Many, Id> = Many extends { [key: string]: () => string }
+type WithHasManyPostFix<Obj, Id, SnakeCase> = SnakeCase extends true
   ? {
       // @ts-expect-error
-      [K in `${keyof Many}Ids`]?: Id[];
+      [K in `${keyof Obj}_ids`]?: Id[];
     }
+  : {
+      // @ts-expect-error
+      [K in `${keyof Obj}Ids`]?: Id[];
+    };
+
+type RelId<One, Id, SnakeCase> = One extends { [key: string]: () => string }
+  ? WithBelongsToPostFix<One, Id, SnakeCase>
   : {};
 
-export type Rels<Many, Models, Id> = Many extends {
+type RelIds<Many, Id, SnakeCase> = Many extends { [key: string]: () => string }
+  ? WithHasManyPostFix<Many, Id, SnakeCase>
+  : {};
+
+export type Rels<Many, Models, Id, SnakeCase> = Many extends {
   [key: string]: () => string;
 }
   ? {
@@ -110,34 +125,42 @@ export type Rels<Many, Models, Id> = Many extends {
         // @ts-expect-error
         Models[ReturnType<Many[K]>]['types'] &
         // @ts-expect-error
-        RelId<Models[ReturnType<Many[K]>]['belongsTo'], Id['id']>)[];
+        RelId<Models[ReturnType<Many[K]>]['belongsTo'], Id['id'], SnakeCase>)[];
     }
   : {};
 
-export type Rel<One, Models, Id> = One extends { [key: string]: () => string }
+export type Rel<One, Models, Id, SnakeCase> = One extends {
+  [key: string]: () => string;
+}
   ? {
       [K in keyof One]?: Id &
         // @ts-expect-error
         Models[ReturnType<One[K]>]['types'] &
         // @ts-expect-error
-        RelId<Models[ReturnType<One[K]>]['belongsTo'], Id['id']>;
+        RelId<Models[ReturnType<One[K]>]['belongsTo'], Id['id'], SnakeCase>;
     }
   : {};
 
-export type FieldTypes<Models, Id> = {
+export type FieldTypes<Models, Id, SnakeCase> = {
   // @ts-expect-error
   [K in keyof Models]: Models[K]['types'] &
     Id &
     // @ts-expect-error
-    Rels<Models[K]['hasMany'], Models, Id> &
+    Rels<Models[K]['hasMany'], Models, Id, SnakeCase> &
     // @ts-expect-error
-    Rel<Models[K]['belongsTo'], Models, Id> &
+    Rel<Models[K]['belongsTo'], Models, Id, SnakeCase> &
     // @ts-expect-error
-    RelId<Models[K]['belongsTo'], Id['id']> &
+    RelId<Models[K]['belongsTo'], Id['id'], SnakeCase> &
     // @ts-expect-error
-    RelIds<Models[K]['hasMany'], Id['id']>;
+    RelIds<Models[K]['hasMany'], Id['id'], SnakeCase>;
 };
 
 export type IdType<IdSettings> = IdSettings extends { idsAreNumbers: true }
   ? { id: number }
   : { id: string };
+
+export type SnakeCase<CaseSettings> = CaseSettings extends {
+  useSnakeCase: true;
+}
+  ? true
+  : false;
