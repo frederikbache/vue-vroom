@@ -92,11 +92,11 @@ export type Settings = {
 type WithBelongsToPostFix<Obj, Id, SnakeCase> = SnakeCase extends true
   ? {
       // @ts-expect-error
-      [K in `${keyof Obj}_id`]?: Id;
+      [K in `${keyof Obj}_id`]: Id;
     }
   : {
       // @ts-expect-error
-      [K in `${keyof Obj}Id`]?: Id;
+      [K in `${keyof Obj}Id`]: Id;
     };
 
 type WithHasManyPostFix<Obj, Id, SnakeCase> = SnakeCase extends true
