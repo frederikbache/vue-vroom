@@ -1,5 +1,6 @@
 import { computed, ref, useSlots } from 'vue';
 import ServerError from './ServerError';
+import RequestIgnoredError from './RequestIgnoredError';
 
 export default function useFetchState(loadOnUpdate: boolean) {
   const hasLoaded = ref(false);
@@ -14,6 +15,10 @@ export default function useFetchState(loadOnUpdate: boolean) {
   const isFailed = computed(() => state.value === 'failed');
 
   function handleError(e: any) {
+    if (e instanceof RequestIgnoredError) {
+      // The request was ignored, no error needed
+      return;
+    }
     if (!slots.failed) {
       if (e.log) {
         e.log('Fetch unhandled:');

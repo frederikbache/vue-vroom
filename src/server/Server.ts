@@ -55,6 +55,16 @@ type Filter<Db> = {
   };
 };
 
+type MetaFields<Db> = {
+  [K in keyof Partial<Db>]: {
+    [field: string]: (
+      // @ts-expect-error
+      items: Db[K]['items'],
+      db: Db
+    ) => any;
+  };
+};
+
 type Sorters<Db> = {
   [K in keyof Partial<Db>]: {
     [field: string]: (
@@ -144,6 +154,9 @@ export type Request = {
   sorters: {
     [field: string]: (a: any, b: any, dir: number, db: any) => number;
   };
+  metaFieldMethods: {
+    [field: string]: (items: any, db: any) => any;
+  };
 };
 
 export default class Server<DbType, IdentityModel> {
@@ -158,6 +171,7 @@ export default class Server<DbType, IdentityModel> {
   protected idsAreNumbers: boolean;
   protected filters: Filter<DbType>;
   protected sideEffects: SideEffect<DbType, IdentityModel>;
+  protected metaFields: MetaFields<DbType>;
   protected sorters: Sorters<DbType>;
   protected addDevtoolsEvent: ((event: any) => void) | undefined;
   protected events: any[];
@@ -188,6 +202,7 @@ export default class Server<DbType, IdentityModel> {
     this.filters = {} as Filter<DbType>;
     this.sorters = {} as Sorters<DbType>;
     this.sideEffects = {} as SideEffect<DbType, IdentityModel>;
+    this.metaFields = {} as MetaFields<DbType>;
     this.events = [];
     this.naming = settings.naming as ApiNames;
   }
@@ -502,7 +517,6 @@ export default class Server<DbType, IdentityModel> {
       if (!route) {
         throw new ServerError(404, { type: 'route_not_found', method, path });
       }
-
       const request = {
         query,
         json: jsonBody,
@@ -518,6 +532,8 @@ export default class Server<DbType, IdentityModel> {
         identity: this.identity,
         // @ts-expect-error
         sorters: this.sorters ? this.sorters[route.model] : {},
+        // @ts-expect-error
+        metaFieldMethods: this.metaFields ? this.metaFields[route.model] : {},
       };
 
       return route.handler(request as any, this.db, this);
@@ -578,6 +594,21 @@ export default class Server<DbType, IdentityModel> {
         ...this.filters[key],
         // @ts-expect-error
         ...filter,
+      };
+    });
+  }
+
+  /** Add one or more custom meta fields */
+  public addMetaFields(obj: MetaFields<DbType>) {
+    Object.entries(obj).forEach(([model, field]) => {
+      const key = model as keyof DbType;
+      if (!(model in this.metaFields)) {
+        this.metaFields[key] = {};
+      }
+      this.metaFields[key] = {
+        ...this.metaFields[key],
+        // @ts-expect-error
+        ...field,
       };
     });
   }

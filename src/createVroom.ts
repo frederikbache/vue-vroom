@@ -25,6 +25,11 @@ export default function createVroom<Options extends Settings & { models: any }>(
     IdType<Options>,
     SnakeCase<Options>
   >;
+
+  type ListMetaTypes = {
+    [K in keyof Options['models']]: Options['models'][K]['metaTypes'];
+  };
+
   type IdentityModel = ModelTypes[ReturnType<Options['identityModel']>];
 
   const { models, ...settings } = options;
@@ -77,7 +82,7 @@ export default function createVroom<Options extends Settings & { models: any }>(
     stores,
     cache,
     types: {} as ModelTypes,
-    useList: createUseList<ModelTypes, IdType<Options>['id']>(
+    useList: createUseList<ModelTypes, IdType<Options>['id'], ListMetaTypes>(
       models,
       stores,
       cache

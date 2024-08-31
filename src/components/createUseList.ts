@@ -40,9 +40,10 @@ type OptionsType<Models, Model extends keyof Models, IdType> = {
   path?: string;
   loadOnUpdate?: boolean;
   lazy?: boolean;
+  throttle?: number;
 };
 
-export default function createUseList<Models, IdType>(
+export default function createUseList<Models, IdType, ListMetaTypes>(
   models: any,
   stores: any,
   cache: any
@@ -53,10 +54,20 @@ export default function createUseList<Models, IdType>(
   ) {
     type ItemType = Models[ModelName];
 
+    // @ts-ignore
+    type ListMetaType = ListMetaTypes[ModelName];
+
     const store = stores[model]();
     const cacheStore = cache();
     const ids = ref([] as IdType[]);
-    const meta = ref({} as any);
+    const meta = ref(
+      {} as {
+        nextCursor?: IdType;
+        page: number;
+        pages: number;
+        results: number;
+      } & ListMetaType
+    );
     const lastPagination = ref('');
 
     const modelSettings = models[model];
@@ -72,8 +83,14 @@ export default function createUseList<Models, IdType>(
       options.include ? unwrap(options.include) : []
     );
     const path = computed(() => (options.path ? unwrap(options.path) : null));
+    const lazy = computed(() =>
+      options.lazy !== undefined ? unwrap(options.lazy) : false
+    );
 
-    const autoFetch = computed(() => !options.lazy);
+    const autoFetch = computed(() => !lazy.value);
+
+    const throttleTimeout = ref(null as ReturnType<typeof setTimeout> | null);
+    const lastRequest = ref(undefined as number | undefined);
 
     const { error, state, hasLoaded, isLoading, isFailed, handleError } =
       useFetchState(!!options.loadOnUpdate);
@@ -90,10 +107,28 @@ export default function createUseList<Models, IdType>(
       });
     }
 
+    const requestKey = Math.random() * performance.now();
+
+    function checkThrottle() {
+      if (options.throttle) {
+        const now = Date.now();
+        if (throttleTimeout.value) clearTimeout(throttleTimeout.value);
+        if (lastRequest.value && now - lastRequest.value < options.throttle) {
+          throttleTimeout.value = setTimeout(() => {
+            fetch();
+          }, options.throttle - (now - lastRequest.value));
+          return false;
+        }
+        lastRequest.value = now;
+      }
+      return true;
+    }
+
     /**
      * Fetch list
      */
     function fetch() {
+      if (!checkThrottle()) return;
       state.value = 'loading';
       store
         .$list(
@@ -101,7 +136,8 @@ export default function createUseList<Models, IdType>(
           pagination.value,
           sort.value,
           include.value,
-          path.value
+          path.value,
+          requestKey
         )
         .then((res: any) => {
           const paginationChanged =
@@ -135,6 +171,10 @@ export default function createUseList<Models, IdType>(
 
     // Run fetch when the filter changes
     watch(filterString, () => {
+      if (autoFetch.value) fetch();
+    });
+
+    watch(autoFetch, () => {
       if (autoFetch.value) fetch();
     });
 
@@ -243,12 +283,7 @@ export default function createUseList<Models, IdType>(
       isLoading,
       isFailed,
       error,
-      meta: meta as {
-        nextCursor?: IdType;
-        page: number;
-        pages: number;
-        results: number;
-      },
+      meta,
     };
   };
 }
