@@ -315,7 +315,7 @@ describe('Use list', () => {
     expect(spy).toHaveBeenCalledWith('/books', { isFavourite: true });
   });
 
-  it.only('Can use custom meta fields', async () => {
+  it('Can use custom meta fields', async () => {
     vroom.db.review.createMany({ rating: 5 }, { rating: 1 }, { rating: 4 });
 
     vroom.server?.addMetaFields({
