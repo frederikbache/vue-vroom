@@ -285,4 +285,23 @@ describe('Use list', () => {
     // @ts-ignore
     expect(wrapper.vm.meta.delay).toBe(5);
   });
+
+  it('Can throttle', async () => {
+    const spy = vi.spyOn(vroom.api, 'get');
+    const isFavourite = ref(false);
+    const wrapper = getWrapper('book', {
+      throttle: 50,
+      filter: { isFavourite },
+    });
+
+    expect(spy).toHaveBeenCalledWith('/books', { isFavourite: false });
+    for (let i = 0; i < 9; i++) {
+      await wait(25);
+      isFavourite.value = !isFavourite.value;
+    }
+    await wait(60);
+    // We should have 6, the first 4 without delay, and the last triggered by timeout
+    expect(spy).toHaveBeenCalledTimes(6);
+    expect(spy).toHaveBeenCalledWith('/books', { isFavourite: true });
+  });
 });

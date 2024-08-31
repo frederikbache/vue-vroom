@@ -40,6 +40,7 @@ type OptionsType<Models, Model extends keyof Models, IdType> = {
   path?: string;
   loadOnUpdate?: boolean;
   lazy?: boolean;
+  throttle?: number;
 };
 
 export default function createUseList<Models, IdType>(
@@ -78,6 +79,9 @@ export default function createUseList<Models, IdType>(
 
     const autoFetch = computed(() => !lazy.value);
 
+    const throttleTimeout = ref(null as ReturnType<typeof setTimeout> | null);
+    const lastRequest = ref(undefined as number | undefined);
+
     const { error, state, hasLoaded, isLoading, isFailed, handleError } =
       useFetchState(!!options.loadOnUpdate);
 
@@ -95,10 +99,26 @@ export default function createUseList<Models, IdType>(
 
     const requestKey = Math.random() * performance.now();
 
+    function checkThrottle() {
+      if (options.throttle) {
+        const now = Date.now();
+        if (throttleTimeout.value) clearTimeout(throttleTimeout.value);
+        if (lastRequest.value && now - lastRequest.value < options.throttle) {
+          throttleTimeout.value = setTimeout(() => {
+            fetch();
+          }, options.throttle - (now - lastRequest.value));
+          return false;
+        }
+        lastRequest.value = now;
+      }
+      return true;
+    }
+
     /**
      * Fetch list
      */
     function fetch() {
+      if (!checkThrottle()) return;
       state.value = 'loading';
       store
         .$list(
