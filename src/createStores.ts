@@ -1,6 +1,7 @@
 import { defineStore, type StoreDefinition } from 'pinia';
 import { ID, ApiNames } from './types';
 import createValidator from './validateResponse';
+import RequestIgnoredError from './RequestIgnoredError';
 
 type SortSettings = {
   field: string;
@@ -181,7 +182,9 @@ function createStore(
 
         return api.get(url, params).then((res: any) => {
           if (requestKey) {
-            if (this.requestKeys[requestKey] !== startedAt) return;
+            if (this.requestKeys[requestKey] !== startedAt) {
+              throw new RequestIgnoredError();
+            }
             delete this.requestKeys[requestKey];
           }
           if (settings.envelope === false) {
