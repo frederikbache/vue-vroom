@@ -52,6 +52,9 @@ export type ModelSettings = {
   inverse?: {
     [local: string]: string | null;
   };
+  listMeta?: {
+    [key: string]: { type: Function };
+  };
 };
 
 export type ApiNames = {

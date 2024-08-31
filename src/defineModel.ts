@@ -42,7 +42,8 @@ export default function defineModel<
   BelongsTo,
   ItemActions extends IA<SchemaType<Schema>>,
   const Singleton,
-  const Includable
+  const Includable,
+  const ListMeta
 >({
   schema,
   belongsTo,
@@ -50,6 +51,7 @@ export default function defineModel<
   itemActions,
   singleton,
   includable,
+  listMeta,
   ...settings
 }: {
   schema: Schema;
@@ -58,6 +60,7 @@ export default function defineModel<
   hasMany?: HasMany;
   singleton?: Singleton;
   includable?: Includable;
+  listMeta?: ListMeta;
 } & SimpleModelSettings) {
   return {
     schema,
@@ -67,6 +70,8 @@ export default function defineModel<
     types: {} as SchemaType<Schema>,
     singleton: singleton as Singleton,
     includable: includable as Includable,
+    listMeta: listMeta as ListMeta,
+    metaTypes: {} as SchemaType<ListMeta>,
     ...settings,
   };
 }

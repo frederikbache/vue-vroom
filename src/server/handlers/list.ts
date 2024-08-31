@@ -51,7 +51,18 @@ export default function indexHandler(
     return items;
   }
 
-  let meta = {};
+  let meta = {} as any;
+
+  if (request.settings.listMeta) {
+    Object.entries(request.settings.listMeta).forEach(([key, field]) => {
+      if (request.metaFieldMethods[key]) {
+        meta[key] = request.metaFieldMethods[key](items, db);
+      } else {
+        meta[key] = field.type();
+      }
+    });
+  }
+
   const paginationSettings = request.settings.pagination;
   if (paginationSettings) {
     if (paginationSettings.type === 'page') {

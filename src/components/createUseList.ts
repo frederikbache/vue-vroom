@@ -43,7 +43,7 @@ type OptionsType<Models, Model extends keyof Models, IdType> = {
   throttle?: number;
 };
 
-export default function createUseList<Models, IdType>(
+export default function createUseList<Models, IdType, ListMetaTypes>(
   models: any,
   stores: any,
   cache: any
@@ -54,10 +54,20 @@ export default function createUseList<Models, IdType>(
   ) {
     type ItemType = Models[ModelName];
 
+    // @ts-ignore
+    type ListMetaType = ListMetaTypes[ModelName];
+
     const store = stores[model]();
     const cacheStore = cache();
     const ids = ref([] as IdType[]);
-    const meta = ref({} as any);
+    const meta = ref(
+      {} as {
+        nextCursor?: IdType;
+        page: number;
+        pages: number;
+        results: number;
+      } & ListMetaType
+    );
     const lastPagination = ref('');
 
     const modelSettings = models[model];
@@ -273,12 +283,7 @@ export default function createUseList<Models, IdType>(
       isLoading,
       isFailed,
       error,
-      meta: meta as {
-        nextCursor?: IdType;
-        page: number;
-        pages: number;
-        results: number;
-      },
+      meta,
     };
   };
 }

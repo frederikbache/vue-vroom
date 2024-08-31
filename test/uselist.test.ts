@@ -27,6 +27,16 @@ const vroom = createVroom({
       },
       includable: ['books'],
     }),
+    review: defineModel({
+      schema: {
+        rating: { type: Number },
+      },
+      pagination: { type: 'page', defaultLimit: 2 },
+      listMeta: {
+        avgRating: { type: Number },
+        minRating: { type: Number },
+      },
+    }),
   },
   server: {
     enable: true,
@@ -303,5 +313,27 @@ describe('Use list', () => {
     // We should have 6, the first 4 without delay, and the last triggered by timeout
     expect(spy).toHaveBeenCalledTimes(6);
     expect(spy).toHaveBeenCalledWith('/books', { isFavourite: true });
+  });
+
+  it.only('Can use custom meta fields', async () => {
+    vroom.db.review.createMany({ rating: 5 }, { rating: 1 }, { rating: 4 });
+
+    vroom.server?.addMetaFields({
+      review: {
+        avgRating(items, db) {
+          return (
+            db.review.all().reduce((acc, item) => acc + item.rating, 0) /
+            db.review.all().length
+          );
+        },
+      },
+    });
+
+    const wrapper = getWrapper('review');
+    await wait();
+    expect(wrapper.vm.items).toHaveLength(2);
+    expect(wrapper.vm.meta.avgRating).toBe(10 / 3);
+    // Min rating should default to default number 0 as we don't have server handler for it
+    expect(wrapper.vm.meta.minRating).toBe(0);
   });
 });
