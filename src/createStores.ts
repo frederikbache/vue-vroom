@@ -130,6 +130,7 @@ function createStore(
   return defineStore('vroom:' + name, {
     state: () => ({
       items: [] as any[],
+      requestKeys: {} as { [key: string]: number },
     }),
     getters: {
       list(state) {
@@ -159,7 +160,8 @@ function createStore(
         pagination: PaginationSettings,
         sort: SortSettings[],
         include: string[],
-        overridePath: string | null
+        overridePath: string | null,
+        requestKey?: string
       ) {
         let params = {
           ...parseFilters(filter),
@@ -172,7 +174,16 @@ function createStore(
         }
         const url = overridePath || endpoint;
 
+        const startedAt = performance.now();
+        if (requestKey) {
+          this.requestKeys[requestKey] = startedAt;
+        }
+
         return api.get(url, params).then((res: any) => {
+          if (requestKey) {
+            if (this.requestKeys[requestKey] !== startedAt) return;
+            delete this.requestKeys[requestKey];
+          }
           if (settings.envelope === false) {
             this.add(res);
             return { items: res };

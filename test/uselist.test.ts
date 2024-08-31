@@ -3,6 +3,7 @@ import { createVroom, defineModel } from '.';
 import { beforeEach, describe, it, expect, vi, test } from 'vitest';
 import { createApp, defineComponent, nextTick, ref } from 'vue';
 import { createPinia } from 'pinia';
+import { wait } from './helpers';
 
 const app = createApp({});
 const vroom = createVroom({
@@ -240,5 +241,48 @@ describe('Use list', () => {
 
     expect(wrapper.vm.isLoading).toBe(false);
     expect(wrapper.vm.items).toHaveLength(4);
+  });
+
+  it('Lazy load is dynamic', async () => {
+    const lazy = ref(true);
+    const wrapper = getWrapper('book', { lazy });
+
+    expect(wrapper.vm.isLoading).toBe(false);
+
+    lazy.value = false;
+    await wait();
+    expect(wrapper.vm.isLoading).toBe(true);
+    await wait();
+    expect(wrapper.vm.isLoading).toBe(false);
+    expect(wrapper.vm.items).toHaveLength(4);
+  });
+
+  it('Handles race condition', async () => {
+    const mock = {
+      async sleep(delay: number) {
+        await wait(delay);
+        return;
+      },
+    };
+    vroom.server?.get('/books', async (request, db) => {
+      const { delay } = request.query as any;
+      const asNumber = parseInt(delay);
+      await mock.sleep(asNumber);
+      return { data: db.book.all(), meta: { delay: asNumber } };
+    });
+    const spy = vi.spyOn(mock, 'sleep');
+
+    const delay = ref(2);
+
+    const wrapper = getWrapper('book', { filter: { delay } });
+    await wait();
+    delay.value = 10;
+    await wait();
+    delay.value = 5;
+    await wait(20); // wait for everything to complete
+    expect(wrapper.vm.items).toHaveLength(4);
+    expect(spy).toHaveBeenCalledTimes(3);
+    // @ts-ignore
+    expect(wrapper.vm.meta.delay).toBe(5);
   });
 });

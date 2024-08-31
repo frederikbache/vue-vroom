@@ -72,8 +72,11 @@ export default function createUseList<Models, IdType>(
       options.include ? unwrap(options.include) : []
     );
     const path = computed(() => (options.path ? unwrap(options.path) : null));
+    const lazy = computed(() =>
+      options.lazy !== undefined ? unwrap(options.lazy) : false
+    );
 
-    const autoFetch = computed(() => !options.lazy);
+    const autoFetch = computed(() => !lazy.value);
 
     const { error, state, hasLoaded, isLoading, isFailed, handleError } =
       useFetchState(!!options.loadOnUpdate);
@@ -90,6 +93,8 @@ export default function createUseList<Models, IdType>(
       });
     }
 
+    const requestKey = Math.random() * performance.now();
+
     /**
      * Fetch list
      */
@@ -101,7 +106,8 @@ export default function createUseList<Models, IdType>(
           pagination.value,
           sort.value,
           include.value,
-          path.value
+          path.value,
+          requestKey
         )
         .then((res: any) => {
           const paginationChanged =
@@ -135,6 +141,10 @@ export default function createUseList<Models, IdType>(
 
     // Run fetch when the filter changes
     watch(filterString, () => {
+      if (autoFetch.value) fetch();
+    });
+
+    watch(autoFetch, () => {
       if (autoFetch.value) fetch();
     });
 
