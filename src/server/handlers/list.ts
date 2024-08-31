@@ -55,7 +55,7 @@ export default function indexHandler(
 
   if (request.settings.listMeta) {
     Object.entries(request.settings.listMeta).forEach(([key, field]) => {
-      if (request.metaFieldMethods[key]) {
+      if (request.metaFieldMethods && request.metaFieldMethods[key]) {
         meta[key] = request.metaFieldMethods[key](items, db);
       } else {
         meta[key] = field.type();
