@@ -39,7 +39,7 @@ type OptionsType<Models, Model extends keyof Models, IdType> = {
   mergePages?: boolean;
   path?: string;
   loadOnUpdate?: boolean;
-  lazy?: boolean;
+  lazy?: R<boolean>;
   throttle?: number;
 };
 
