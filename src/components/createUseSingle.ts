@@ -21,6 +21,7 @@ type OptionsType<Models, Model extends keyof Models> = {
   path?: string;
   loadOnUpdate?: boolean;
   lazy?: boolean;
+  preferCache?: boolean;
 };
 
 export default function createUseSingle<Models, IdType>(
@@ -46,6 +47,14 @@ export default function createUseSingle<Models, IdType>(
       options.include ? unwrap(options.include) : []
     );
     const path = computed(() => (options.path ? unwrap(options.path) : null));
+
+    const autoFetch = computed(() => {
+      if (options.lazy) return false;
+      if (options.preferCache) {
+        if (!!store.single(singleId.value)) return false;
+      }
+      return true;
+    });
 
     if (modelSettings.includable) {
       include.value.forEach((i: string) => {
@@ -84,7 +93,7 @@ export default function createUseSingle<Models, IdType>(
     }
 
     // Run the fetch
-    if (!options.lazy) {
+    if (autoFetch.value) {
       fetch();
     }
 
@@ -92,7 +101,7 @@ export default function createUseSingle<Models, IdType>(
     watch(singleId, (newId, oldId) => {
       cacheStore.subscribe(model, [newId]);
       cacheStore.unsubscribe(model, [oldId]);
-      if (!options.lazy) fetch();
+      if (autoFetch.value) fetch();
     });
 
     /**
