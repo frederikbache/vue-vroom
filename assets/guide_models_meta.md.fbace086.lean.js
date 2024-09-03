@@ -1,0 +1,1 @@
+import{_ as s,o as a,c as n,a as l}from"./app.9fa6863f.js";const C=JSON.parse('{"title":"Meta fields for lists","description":"","frontmatter":{},"headers":[],"relativePath":"guide/models/meta.md"}'),o={name:"guide/models/meta.md"},e=l("",4),p=[e];function t(c,r,D,y,F,i){return a(),n("div",null,p)}const d=s(o,[["render",t]]);export{C as __pageData,d as default};

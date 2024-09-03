@@ -1,1 +1,0 @@
-import{_ as s,o as n,c as a,a as p}from"./app.3ac53504.js";const i=JSON.parse('{"title":"Mocking identity","description":"","frontmatter":{},"headers":[],"relativePath":"guide/server/identity.md"}'),l={name:"guide/server/identity.md"},o=p("",10),e=[o];function t(c,r,D,y,F,C){return n(),a("div",null,e)}const d=s(l,[["render",t]]);export{i as __pageData,d as default};

@@ -1,0 +1,1 @@
+import{_ as s,o as a,c as n,a as o}from"./app.9fa6863f.js";const A=JSON.parse('{"title":"Mocking meta fields","description":"","frontmatter":{},"headers":[],"relativePath":"guide/server/meta.md"}'),l={name:"guide/server/meta.md"},e=o("",5),p=[e];function t(r,c,y,F,i,D){return a(),n("div",null,p)}const d=s(l,[["render",t]]);export{A as __pageData,d as default};
