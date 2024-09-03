@@ -75,9 +75,11 @@ function getWrapper(model: string, id: string, settings = {}) {
   });
 }
 
-describe('Use list', () => {
+describe('Use single', () => {
   beforeEach(() => {
     vroom.server?.reset();
+    vroom.stores.book().items = [];
+    vroom.stores.author().items = [];
 
     vroom.db.author.createMany(
       {
@@ -116,5 +118,25 @@ describe('Use list', () => {
         include: ['author'],
       });
     }).toThrowError('does not have');
+  });
+
+  it('Does not load if marked lazy', async () => {
+    const wrapper = getWrapper('book', '1', { lazy: true });
+
+    expect(wrapper.vm.isLoading).toBe(false);
+  });
+
+  it('Does load if marked prefer cache and id is not in cache', async () => {
+    const wrapper = getWrapper('book', '1', { preferCache: true });
+
+    expect(wrapper.vm.isLoading).toBe(true);
+  });
+
+  it('Does not load if marked prefer cache and id is in cache', async () => {
+    const anotherWrapper = getWrapper('book', '1');
+    await new Promise((r) => setTimeout(r, 2));
+    const wrapper = getWrapper('book', '1', { preferCache: true });
+
+    expect(wrapper.vm.isLoading).toBe(false);
   });
 });
