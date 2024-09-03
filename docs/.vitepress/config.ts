@@ -34,6 +34,7 @@ export default {
             { text: 'Singleton models', link: '/guide/models/singleton' },
             { text: 'Setting up relations', link: '/guide/models/relations' },
             { text: 'Pagination settings', link: '/guide/models/pagination' },
+            { text: 'List meta fields', link: '/guide/models/meta' },
           ],
         },
         {
@@ -43,6 +44,7 @@ export default {
             { text: 'Seeding mock data', link: '/guide/server/seeding' },
             { text: 'Mocking custom filters', link: '/guide/server/filters' },
             { text: 'Mocking side effects', link: '/guide/server/sideeffects' },
+            { text: 'Mocking meta fields', link: '/guide/server/meta' },
             { text: 'Custom routes', link: '/guide/server/routes' },
             { text: 'Mocking identity', link: '/guide/server/identity' },
           ],
