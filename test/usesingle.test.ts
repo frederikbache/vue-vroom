@@ -141,14 +141,14 @@ describe('Use single', () => {
     expect(wrapper.vm.isLoading).toBe(false);
   });
 
-  it.only('Does not load if id is undefined', async () => {
+  it('Does not load if id is undefined', async () => {
     const id = ref(undefined as string | undefined);
     const wrapper = getWrapper('book', id);
 
     expect(wrapper.vm.isLoading).toBe(false);
   });
 
-  it.only('Triggers load if id goes from undefined to defined', async () => {
+  it('Triggers load if id goes from undefined to defined', async () => {
     const id = ref(undefined as string | undefined);
     const wrapper = getWrapper('book', id);
 
