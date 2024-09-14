@@ -160,6 +160,20 @@ describe('Use list', () => {
     ]);
   });
 
+  it('Can use same filter multiple times', async () => {
+    vroom.db.author.createMany({
+      name: 'CS Lewis',
+    });
+    const wrapper = getWrapper('author', {
+      filter: { id: { gte: '2', lte: '3' } },
+    });
+    await new Promise((r) => setTimeout(r, 2));
+    expect(wrapper.vm.items).toStrictEqual([
+      { id: '2', name: 'George R.R. Martin' },
+      { id: '3', name: 'CS Lewis' },
+    ]);
+  });
+
   it('Can sort', async () => {
     const sortDir = ref('ASC');
     const sortField = ref('name');
