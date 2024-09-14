@@ -40,15 +40,15 @@
     "@rollup/plugin-replace": "^5.0.0",
     "@types/node": "^18.8.3",
     "@vitejs/plugin-vue": "^4.0.0",
-    "@vitest/coverage-istanbul": "^0.24.3",
-    "@vue/test-utils": "^2.1.0",
+    "@vitest/coverage-istanbul": "^2.1.1",
+    "@vue/test-utils": "^2.4.6",
     "jsdom": "^20.0.1",
     "prettier": "^2.8.7",
-    "typescript": "^5.0.3",
-    "vite": "^4.0.0",
+    "typescript": "^5.6.2",
+    "vite": "^4.5.3",
     "vitepress": "^1.0.0-alpha.19",
-    "vitest": "^0.29.8",
-    "vue-tsc": "^1.2.0"
+    "vitest": "^2.1.1",
+    "vue-tsc": "^2.1.6"
   },
   "peerDependencies": {
     "pinia": "^2.0.0",
