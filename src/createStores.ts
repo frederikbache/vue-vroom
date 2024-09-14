@@ -33,23 +33,25 @@ function parseFilters(filterSettings: any) {
       filters[field] = obj;
     } else if (obj && typeof obj === 'object') {
       let operator = '';
-      let val;
       ['gt', 'lt', 'gte', 'lte', 'contains'].forEach((op) => {
         if (op in obj) {
           operator = op;
-          val = (obj as any)[op];
+          const val = (obj as any)[op];
+          if (val) {
+            filters[`${field}[${operator}]`] = val;
+          }
         }
       });
 
       ['between'].forEach((op) => {
         if (op in obj) {
           operator = op;
-          val = (obj as any)[op].join(',');
+          const val = (obj as any)[op].join(',');
+          if (val) {
+            filters[`${field}[${operator}]`] = val;
+          }
         }
       });
-      if (val) {
-        filters[`${field}[${operator}]`] = val;
-      }
     }
   });
 
